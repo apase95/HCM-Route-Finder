@@ -2,7 +2,7 @@
 
 Dự án Web Application tìm kiếm đường đi ngắn nhất trong khu vực nội thành Thành phố Hồ Chí Minh. Hệ thống được thiết kế theo kiến trúc chuẩn GIS, sử dụng dữ liệu thực tế từ OpenStreetMap và thuật toán Dijkstra để tính toán lộ trình tối ưu.
 
-Đường dẫn dự án: `https://github.com/apase95/Ho-Chi-Minh-Route-Finder`
+Đường dẫn dự án: `https://github.com/apase95/HCM-Route-Finder`
 
 ## Tính năng chính (Features)
 
@@ -33,7 +33,7 @@ Dự án Web Application tìm kiếm đường đi ngắn nhất trong khu vực
 ## Cấu trúc thư mục (Project Structure)
 
 ```txt
-Ho-Chi-Minh-Route-Finder/
+HCM-Route-Finder/
 ├── frontend/             # Next.js application
 ├── backend/              # Golang REST API
 ├── data/                 # Thư mục chứa dữ liệu OSM và script import DB
@@ -50,7 +50,7 @@ Ho-Chi-Minh-Route-Finder/
 
 ### Bước 1: Clone dự án
 ```bash
-git clone https://github.com/apase95/Ho-Chi-Minh-Route-Finder.git
+git clone https://github.com/apase95/HCM-Route-Finder.git
 cd Ho-Chi-Minh-Route-Finder
 ```
 
