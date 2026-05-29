@@ -1,0 +1,40 @@
+services:
+  # 1. Database PostGIS
+  postgres:
+    image: postgis/postgis:15-3.4
+    container_name: hcm_postgis
+    environment:
+      POSTGRES_USER: hcm-route-finder
+      POSTGRES_PASSWORD: hodangthaiduy123456
+      POSTGRES_DB: hcm-route-finder-databasedatabase
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # 2. Golang Backend
+  backend:
+    build: ./backend
+    container_name: hcm_backend
+    environment:
+      - DB_HOST=hcm_postgis
+      - GIN_MODE=release
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  # 3. Next.js Frontend
+  frontend:
+    build: ./frontend
+    container_name: hcm_frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  pgdata:
