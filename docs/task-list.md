@@ -223,21 +223,21 @@ HCM-Route-Finder/
 
 # DAY 6 — FRONTEND ROUTING UI
 
-- [ ] **TSK-021** `[FE_Search]` Làm UI ô tìm kiếm (Autocomplete). *(Estimate: 2h · Priority: High)*
+- [x] **TSK-021** `[FE_Search]` Làm UI ô tìm kiếm (Autocomplete). *(Estimate: 2h · Priority: High)*
 
   **Description:**
   - Tạo 2 input: Điểm đi, Điểm đến.
   - Gõ text -> debounce -> fetch `GET /api/v1/search` -> hiện list dropdown.
   - Click vào kết quả -> Update map marker và lưu State.
 
-- [ ] **TSK-022** `[FE_Routing]` Call backend routing API từ NextJS. *(Estimate: 2h · Priority: Urgent)*
+- [x] **TSK-022** `[FE_Routing]` Call backend routing API từ NextJS. *(Estimate: 2h · Priority: Urgent)*
 
   **Description:**
   - Trigger API khi ấn nút "Tìm đường" (đã có đủ `startPoint` + `endPoint`).
   - Loading state: spinner overlay trên màn hình.
   - Error state: dùng `sonner` hoặc `react-toastify` để hiện thông báo lỗi.
 
-- [ ] **TSK-023** `[FE_Routing]` Draw route polyline trên Leaflet. *(Estimate: 1.5h · Priority: Urgent)*
+- [x] **TSK-023** `[FE_Routing]` Draw route polyline trên Leaflet. *(Estimate: 1.5h · Priority: Urgent)*
 
   **Description:**
   - Trích xuất mảng `path` từ API.
@@ -248,7 +248,7 @@ HCM-Route-Finder/
   - Auto `fitBounds` để zoom map vừa khít với đường đi.
   - Clear polyline cũ khi tìm đường mới.
 
-- [ ] **TSK-024** `[FE_UI]` Hiển thị route information. *(Estimate: 1h · Priority: Medium)*
+- [x] **TSK-024** `[FE_UI]` Hiển thị route information. *(Estimate: 1h · Priority: Medium)*
 
   **Description:**
   - Panel nổi (overlay UI) hiển thị: Quãng đường (x.x km) + Thời gian dự kiến (x phút).
@@ -277,7 +277,7 @@ HCM-Route-Finder/
   - Dọn dẹp spacing, layout TailwindCSS.
   - Đảm bảo trên Mobile, UI Panel input hiển thị gọn gàng (bottom sheet hoặc floating panel).
 
-- [ ] **TSK-028** `[Deploy]` Dockerize frontend + backend. *(Estimate: 2h · Priority: Medium)*
+- [x] **TSK-028** `[Deploy]` Dockerize frontend + backend. *(Estimate: 2h · Priority: Medium)*
 
   **Description:**
   - `Dockerfile` cho NextJS (multi-stage build)
