@@ -16,7 +16,7 @@ HCM-Route-Finder/
 
 # DAY 1 — PROJECT SETUP + MAP RENDERING
 
-- [ ] **TSK-001** `[PM/Setup]` Khởi tạo Monorepo Git + Base Structure. *(Estimate: 1h · Priority: Urgent)*
+- [x] **TSK-001** `[PM/Setup]` Khởi tạo Monorepo Git + Base Structure. *(Estimate: 1h · Priority: Urgent)*
 
   **Description:**
   - Tạo repo Github `hcm-route-finder`
@@ -24,7 +24,7 @@ HCM-Route-Finder/
   - Tạo folder: `frontend/`, `backend/`, `data/`, `docs/`
   - Tạo README mô tả: Stack, Feature, Roadmap
 
-- [ ] **TSK-002** `[FE_Core]` Khởi tạo NextJS App Router bằng PNPM. *(Estimate: 1h · Priority: Urgent)*
+- [x] **TSK-002** `[FE_Core]` Khởi tạo NextJS App Router bằng PNPM. *(Estimate: 1h · Priority: Urgent)*
 
   **Description:**
   - Chạy:
@@ -36,7 +36,7 @@ HCM-Route-Finder/
   - Cài thêm: `clsx`, `tailwind-merge`, `lucide-react`
   - Dọn dẹp `page.tsx`, `global.css` mặc định của NextJS
 
-- [ ] **TSK-003** `[FE_Map]` Cài đặt Leaflet + React Leaflet. *(Estimate: 30m · Priority: Urgent)*
+- [x] **TSK-003** `[FE_Map]` Cài đặt Leaflet + React Leaflet. *(Estimate: 30m · Priority: Urgent)*
 
   **Description:**
   - Install:
@@ -47,7 +47,7 @@ HCM-Route-Finder/
   - Sửa lỗi thiếu CSS của Leaflet (import `leaflet/dist/leaflet.css` vào `layout.tsx` hoặc `globals.css`)
   - Fix default icon issue (override icon mặc định của Leaflet khi dùng với NextJS)
 
-- [ ] **TSK-004** `[FE_Map]` Render bản đồ nội thành TP.HCM. *(Estimate: 2h · Priority: Urgent)*
+- [x] **TSK-004** `[FE_Map]` Render bản đồ nội thành TP.HCM. *(Estimate: 2h · Priority: Urgent)*
 
   **Description:**
   - Tạo component `MapView.tsx` với `"use client"`
@@ -55,7 +55,7 @@ HCM-Route-Finder/
   - Center: `[10.7769, 106.7009]` · Zoom: `14`
   - Verify: zoom, drag, tile loading mượt mà
 
-- [ ] **TSK-005** `[FE_Map]` Thêm marker interaction (click chọn điểm). *(Estimate: 2h · Priority: High)*
+- [x] **TSK-005** `[FE_Map]` Thêm marker interaction (click chọn điểm). *(Estimate: 2h · Priority: High)*
 
   **Description:**
   - Lắng nghe sự kiện `useMapEvents` của React-Leaflet.
@@ -67,7 +67,7 @@ HCM-Route-Finder/
 
 # DAY 2 — BACKEND + DATABASE + OSM DATA
 
-- [ ] **TSK-006** `[BE_Core]` Khởi tạo Golang Backend với Gin. *(Estimate: 1.5h · Priority: Urgent)*
+- [x] **TSK-006** `[BE_Core]` Khởi tạo Golang Backend với Gin. *(Estimate: 1.5h · Priority: Urgent)*
 
   **Description:**
   - Initialize:
@@ -84,7 +84,7 @@ HCM-Route-Finder/
     └── models/
     ```
 
-- [ ] **TSK-007** `[Infra]` Setup PostgreSQL + PostGIS bằng Docker Compose. *(Estimate: 1.5h · Priority: Urgent)*
+- [x] **TSK-007** `[Infra]` Setup PostgreSQL + PostGIS bằng Docker Compose. *(Estimate: 1.5h · Priority: Urgent)*
 
   **Description:**
   - Viết `docker-compose.yml` ở root
@@ -93,13 +93,13 @@ HCM-Route-Finder/
   - Map port `5432:5432`  
   - Tạo database connection từ Go (dùng `pgx` hoặc `GORM`).
 
-- [ ] **TSK-008** `[Data]` Download OpenStreetMap Data TP.HCM. *(Estimate: 1h · Priority: Urgent)*
+- [x] **TSK-008** `[Data]` Download OpenStreetMap Data TP.HCM. *(Estimate: 1h · Priority: Urgent)*
 
   **Description:**
   - Download file `.osm.pbf` từ [BBBike](https://extract.bbbike.org/) (chọn custom bounding box để cắt đúng khung nội thành HCM).
   - Lưu vào `/data/hcm.osm.pbf`
 
-- [ ] **TSK-009** `[Data]` Import OSM vào PostGIS bằng `osm2pgsql`. *(Estimate: 2h - Priority: Urgent)*
+- [x] **TSK-009** `[Data]` Import OSM vào PostGIS bằng `osm2pgsql`. *(Estimate: 2h - Priority: Urgent)*
 
   **Description:**
   - Chạy tool `osm2pgsql` (khuyên dùng qua Docker image để không cần cài tool).
@@ -113,7 +113,7 @@ HCM-Route-Finder/
 
 # DAY 3 — QUERY DATABASE + BUILD GRAPH
 
-- [ ] **TSK-010** `[DB_Query]` Viết câu SQL lọc đường đi (Routing Data). *(Estimate: 2h · Priority: Urgent)*
+- [x] **TSK-010** `[DB_Query]` Viết câu SQL lọc đường đi (Routing Data). *(Estimate: 2h · Priority: Urgent)*
 
   **Description:**
   - Viết script SQL trích xuất danh sách đoạn đường (Edges) từ bảng `planet_osm_line`.
@@ -122,13 +122,13 @@ HCM-Route-Finder/
   - Trích xuất thông tin `oneway`.
   - Dùng PostGIS tính chiều dài đường: `ST_Length(way::geography) AS distance`.
 
-- [ ] **TSK-011** `[BE_Data]` Query Data vào Golang. *(Estimate: 1h · Priority: Urgent)*
+- [x] **TSK-011** `[BE_Data]` Query Data vào Golang. *(Estimate: 1h · Priority: Urgent)*
 
   **Description:**
   - Viết hàm Golang kết nối DB và chạy câu Query TSK-010.
   - Parse kết quả SQL trả về dạng array các `Edge` để chuẩn bị build Graph.
 
-- [ ] **TSK-012** `[BE_Graph]` Thiết kế Node + Edge model. *(Estimate: 1h · Priority: Urgent)*
+- [x] **TSK-012** `[BE_Graph]` Thiết kế Node + Edge model. *(Estimate: 1h · Priority: Urgent)*
 
   **Description:**
   - Define structs:
@@ -144,7 +144,7 @@ HCM-Route-Finder/
     }
     ```
 
-- [ ] **TSK-013** `[BE_Graph]` Build adjacency list graph vào Memory. *(Estimate: 2h · Priority: Urgent)*
+- [x] **TSK-013** `[BE_Graph]` Build adjacency list graph vào Memory. *(Estimate: 2h · Priority: Urgent)*
 
   **Description:**
   - Build: `map[int64][]Edge`

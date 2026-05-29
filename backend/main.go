@@ -2,14 +2,24 @@ package main
 
 import (
 	"hcm-route-finder/internal/db"
+	"hcm-route-finder/internal/graph"
 	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
+var RouteGraph *graph.RouteGraph
+
 func main() {
 	db.ConnectDB()
+	
+	roads := db.FetchAllRoads()
+	if len(roads) > 0 {
+		log.Printf("Đoạn đường mẫu: ID=%d, Oneway=%s, Dài=%.2fm", roads[0].OsmID, roads[0].Oneway, roads[0].TotalDistance)
+	}
+
+	RouteGraph = graph.BuildGraph(roads)
 
 	r := gin.Default()
 	r.SetTrustedProxies(nil)
