@@ -185,14 +185,14 @@ HCM-Route-Finder/
 
 # DAY 5 — ROUTING API & SEARCH
 
-- [ ] **TSK-017** `[BE_API]` Tạo endpoint `GET /api/v1/route`. *(Estimate: 2h · Priority: Urgent)*
+- [x] **TSK-017** `[BE_API]` Tạo endpoint `GET /api/v1/route`. *(Estimate: 2h · Priority: Urgent)*
 
   **Description:**
   - Query params: `startLat`, `startLng`, `endLat`, `endLng`
   - Flow: coordinate → gọi PostGIS `nearestNode()` → `Dijkstra(start, end)` → trả mảng coordinates.
   - Thêm CORS header cho NextJS frontend gọi được.
 
-- [ ] **TSK-018** `[BE_API]` Return GeoJSON / JSON route response. *(Estimate: 1h · Priority: High)*
+- [x] **TSK-018** `[BE_API]` Return GeoJSON / JSON route response. *(Estimate: 1h · Priority: High)*
 
   **Description:**
   - Response format:
@@ -205,14 +205,14 @@ HCM-Route-Finder/
     ```
   - `duration` ước tính: `distance / 30 * 3.6` (giây, giả sử tốc độ 30 km/h).
 
-- [ ] **TSK-019** `[BE_API]` API Tìm kiếm địa điểm (Proxy Nominatim). *(Estimate: 2h · Priority: Medium)*
+- [x] **TSK-019** `[BE_API]` API Tìm kiếm địa điểm (Proxy Nominatim). *(Estimate: 2h · Priority: Medium)*
 
   **Description:**
   - Cực kỳ hữu ích cho MVP. Tạo `GET /api/v1/search?q=Ben Thanh`
   - Gọi HTTP GET tới `https://nominatim.openstreetmap.org/search` (Giới hạn `viewbox` ở HCM).
   - Map response trả về format thống nhất cho FE.
 
-- [ ] **TSK-020** `[BE_API]` Error handling + logging cơ bản. *(Estimate: 1h · Priority: Medium)*
+- [x] **TSK-020** `[BE_API]` Error handling + logging cơ bản. *(Estimate: 1h · Priority: Medium)*
 
   **Description:**
   - `404`: no path found / điểm quá xa ngoại thành.

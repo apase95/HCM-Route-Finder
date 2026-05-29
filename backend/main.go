@@ -1,6 +1,7 @@
 package main
 
 import (
+	"hcm-route-finder/internal/api"
 	"hcm-route-finder/internal/db"
 	"hcm-route-finder/internal/graph"
 	"log"
@@ -15,10 +16,6 @@ func main() {
 	db.ConnectDB()
 	
 	roads := db.FetchAllRoads()
-	if len(roads) > 0 {
-		log.Printf("Đoạn đường mẫu: ID=%d, Oneway=%s, Dài=%.2fm", roads[0].OsmID, roads[0].Oneway, roads[0].TotalDistance)
-	}
-
 	RouteGraph = graph.BuildGraph(roads)
 
 
@@ -47,6 +44,10 @@ func main() {
 			"errorCode": nil,
 		})
 	})
+
+	r.GET("/api/v1/routes", api.GetRoute(RouteGraph))
+
+	r.GET("/api/v1/search", api.SearchLocation())
 
 	log.Printf("🚀 Server is running on http://localhost:8080 ...")
 	if err := r.Run(":8080"); err != nil {
