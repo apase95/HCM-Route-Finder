@@ -156,14 +156,14 @@ HCM-Route-Finder/
 
 # DAY 4 — DIJKSTRA IMPLEMENTATION
 
-- [ ] **TSK-014** `[Algorithm]` Implement Min Heap / Priority Queue. *(Estimate: 1.5h · Priority: Urgent)*
+- [x] **TSK-014** `[Algorithm]` Implement Min Heap / Priority Queue. *(Estimate: 1.5h · Priority: Urgent)*
 
   **Description:**
   - Implement `heap.Interface` từ package `container/heap` của Go.
   - Push, Pop với priority = distance.
   - Struct `Item { NodeID, Distance, Index }`.
 
-- [ ] **TSK-015** `[Algorithm]` Implement thuật toán Dijkstra. *(Estimate: 3h · Priority: Urgent)*
+- [x] **TSK-015** `[Algorithm]` Implement thuật toán Dijkstra. *(Estimate: 3h · Priority: Urgent)*
 
   **Description:**
   - `dist map[int64]float64` → khởi tạo `+Inf`.
@@ -171,7 +171,7 @@ HCM-Route-Finder/
   - `visited` set để skip node đã xử lý.
   - Return: `[]int64` (danh sách Node ID tạo thành đường đi ngắn nhất).
 
-- [ ] **TSK-016** `[Algorithm]` Tìm Nearest Node bằng PostGIS (Spatial Query). *(Estimate: 1.5h · Priority: High)*
+- [x] **TSK-016** `[Algorithm]` Tìm Nearest Node bằng PostGIS (Spatial Query). *(Estimate: 1.5h · Priority: High)*
 
   **Description:**
   - Input: `lat, lng` từ click của user.

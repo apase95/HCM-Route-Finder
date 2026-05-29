@@ -21,6 +21,7 @@ func main() {
 
 	RouteGraph = graph.BuildGraph(roads)
 
+
 	r := gin.Default()
 	r.SetTrustedProxies(nil)
 	r.GET("/favicon.ico", func(c *gin.Context) {
