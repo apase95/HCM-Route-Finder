@@ -1,6 +1,6 @@
 # Ho Chi Minh Route Finder
 
-Dự án Web Application tìm kiếm đường đi ngắn nhất trong khu vực nội thành Thành phố Hồ Chí Minh. Hệ thống được thiết kế theo kiến trúc chuẩn GIS, sử dụng dữ liệu thực tế từ OpenStreetMap và thuật toán Dijkstra để tính toán lộ trình tối ưu.
+Dự án Web Application tìm kiếm đường đi ngắn nhất trong khu vực nội thành Thành phố Hồ Chí Minh. Hệ thống được thiết kế theo kiến trúc chuẩn GIS, sử dụng dữ liệu thực tế từ OpenStreetMap và thuật toán A* để tính toán lộ trình tối ưu.
 
 Đường dẫn dự án: `https://github.com/apase95/HCM-Route-Finder`
 
@@ -14,19 +14,19 @@ Dự án Web Application tìm kiếm đường đi ngắn nhất trong khu vực
 
 ## Thuật toán và Kiến trúc (Architecture Notes)
 
-- **Xử lý không gian (Spatial Processing):** Sử dụng PostGIS `ST_Distance` và toán tử `<->` để tìm Nearest Node (điểm giao thông gần nhất với vị trí người dùng click). Việc này giúp tận dụng R-Tree Index của Database thay vì tính toán Brute-force trên Backend.
-- **In-Memory Graph:** Để đảm bảo thuật toán Dijkstra chạy với tốc độ < 100ms, toàn bộ Node và Edge được Backend query từ Database và lưu sẵn vào cấu trúc dữ liệu Adjacency List (Map) trên RAM ngay lúc khởi động server.
-- **Routing Data:** Dữ liệu đã được lọc, loại bỏ các đường đi bộ (`footway`, `steps`) và tuân thủ chặt chẽ thuộc tính đường một chiều (`oneway=yes`) của OSM.
+- **Thuật toán A* (A-Star):** Nâng cấp từ Dijkstra, sử dụng hàm Heuristic (Haversine Distance - khoảng cách đường chim bay) để định hướng tìm kiếm thẳng về đích, giúp tăng tốc độ tìm đường lên gấp 3-5 lần.
+- **Xử lý không gian (Spatial Processing):** Thuật toán tự viết trên Golang giúp duyệt nhanh qua hơn 230,000 Nodes trên RAM chỉ trong ~2ms để tìm điểm giao thông gần nhất với vị trí người dùng.
+- **In-Memory Graph:** Toàn bộ Node và Edge được Backend query từ Database (PostGIS) và lưu sẵn vào cấu trúc dữ liệu Adjacency List (Map) trên RAM ngay lúc khởi động server, loại bỏ độ trễ do I/O Database.
 
 
 ## Tech Stack
 
-- **Frontend:** Next.js (App Router), TypeScript, Tailwind CSS, Leaflet (React-Leaflet). Package manager: `pnpm`.
+- **Frontend:** Next.js (App Router), TypeScript, Tailwind CSS, Leaflet (React-Leaflet).
 - **Backend:** Golang, Gin Framework.
 - **Database:** PostgreSQL tích hợp extension PostGIS.
-- **Thuật toán:** Dijkstra, Haversine.
+- **Thuật toán:** A* (A-Star) Routing Algorithm, Haversine Formula.
 - **Dữ liệu:** OpenStreetMap (OSM) - Định dạng `.osm.pbf`.
-- **Hạ tầng:** Docker, Docker Compose.
+- **Hạ tầng:** Docker, Docker Compose (Multi-stage build).
 
 ---
 
@@ -44,48 +44,37 @@ HCM-Route-Finder/
 
 ---
 
-## Hướng dẫn cài đặt (Local Setup)
+## Hướng dẫn cài đặt (Local Setup qua Docker)
 
 Để chạy dự án ở môi trường local, máy tính của bạn cần cài đặt sẵn: `Docker`, `Docker Compose`, `Go` (>= 1.20) và `Node.js` (khuyên dùng `pnpm`).
 
 ### Bước 1: Clone dự án
 ```bash
 git clone https://github.com/apase95/HCM-Route-Finder.git
-cd Ho-Chi-Minh-Route-Finder
+cd HCM-Route-Finder
 ```
 
-### Bước 2: Khởi chạy Database
-Dự án sử dụng PostgreSQL + PostGIS chạy qua Docker.
+### Bước 2: Khởi chạy toàn bộ hệ thống
+Lệnh này sẽ tự động Build Backend, Frontend và khởi tạo Database.
 ```bash
-docker-compose up -d postgres
+docker compose up -d --build
 ```
-*Lưu ý: Đợi khoảng 15-30 giây để database khởi tạo hoàn toàn trong lần chạy đầu tiên.*
 
 ### Bước 3: Tải và Import dữ liệu bản đồ (OSM)
 1. Tải dữ liệu bản đồ khu vực TP.HCM định dạng `.osm.pbf` và lưu vào thư mục `data/hcm.osm.pbf`.
-2. Sử dụng công cụ `osm2pgsql` để nạp dữ liệu vào PostGIS.
+2. Chạy lệnh sau để tự động import dữ liệu không gian vào PostGIS:
 ```bash
-# Chạy lệnh này tại thư mục gốc của dự án
-docker run --rm -v $(pwd)/data:/osm -e PGPASSWORD=secret --network host pdok/osm2pgsql -d route_db -U user -H localhost -W -S default.style /osm/hcm.osm.pbf
+docker run --rm \
+  -v $(pwd)/data:/osm \
+  -e PGPASSWORD=hodangthaiduy123456 \
+  --network hcm-route-finder_default \
+  debian:bookworm-slim \
+  sh -c "apt-get update && apt-get install -y osm2pgsql && osm2pgsql -d hcm-route-finder-databasedatabase -U hcm-route-finder -H hcm_postgis /osm/hcm.osm.pbf"
 ```
 
-### Bước 4: Khởi chạy Backend (Golang)
-Backend sẽ kết nối với Database, lấy dữ liệu mạng lưới giao thông và xây dựng Đồ thị (Graph) vào RAM.
-```bash
-cd backend
-go mod tidy
-go run main.go
-```
-*API sẽ chạy tại: `http://localhost:8080`*
-
-### Bước 5: Khởi chạy Frontend (Next.js)
-Mở một tab Terminal mới.
-```bash
-cd frontend
-pnpm install
-pnpm dev
-```
-*Truy cập ứng dụng tại: `http://localhost:3000`*
+### Bước 4: Trải nghiệm
+- Mở trình duyệt và truy cập: `http://localhost:3000`
+- API Backend chạy ngầm tại: `http://localhost:8080/api/v1/ping`
 
 ---
 
@@ -96,6 +85,5 @@ Nếu bạn là thành viên tham gia phát triển dự án này, vui lòng đ�
 1. **[Quy chuẩn làm việc & Code Style](docs/RULES.md)**: Chứa thông tin về Git Workflow, cách đặt tên nhánh, viết commit message và tiêu chuẩn API.
 2. **[Hướng dẫn cho người mới](docs/first-step.md)**: Hướng dẫn chi tiết cách tạo Branch, Commit và mở Pull Request (PR) hợp lệ.
 
-*Vui lòng không push code trực tiếp vào nhánh `main` và `dev`.*
 
 ---

@@ -34,7 +34,7 @@ func GetRoute(g *graph.RouteGraph) gin.HandlerFunc {
 
 		startNodeID := g.FindNearestNode(startLat, startLng)
 		endNodeID := g.FindNearestNode(endLat, endLng)
-		pathIDs, distance, err := routing.Dijkstra(g, startNodeID, endNodeID)
+		pathIDs, distance, err := routing.AStar(g, startNodeID, endNodeID)
 		if err != nil {
 			c.JSON(http.StatusNotFound, gin.H{
 				"success":   false,
