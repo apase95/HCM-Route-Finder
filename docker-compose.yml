@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgis/postgis:15-3.4
+    container_name: hcm_postgis
+    environment:
+      POSTGRES_USER: hcm-route-finder
+      POSTGRES_PASSWORD: hodangthaiduy123456
+      POSTGRES_DB: hcm-route-finder-databasedatabase
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  pgdata:
