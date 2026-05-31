@@ -120,7 +120,7 @@ HCM-Route-Finder/
   - Viết module `db.py` dùng `psycopg2` để kết nối tới PostgreSQL.
   - Sử dụng hàm `cursor.fetchall()` để nạp toàn bộ kết quả SQLvào RAM dưới dạng list các Dictionary hoặc Tuples.
 
-- [ ] **TSK-012** `[BE_Graph]` Thiết kế Node + Edge model. *(Estimate: 1h · Priority: Urgent)*
+- [x] **TSK-012** `[BE_Graph]` Thiết kế Node + Edge model. *(Estimate: 1h · Priority: Urgent)*
 
   **Description:**
   - Dùng `dataclass` để định nghĩa:
@@ -135,7 +135,7 @@ HCM-Route-Finder/
         weight: float
     ```
 
-- [ ] **TSK-013** `[BE_Graph]` Build adjacency list graph vào Memory. *(Estimate: 2h · Priority: Urgent)*
+- [x] **TSK-013** `[BE_Graph]` Build adjacency list graph vào Memory. *(Estimate: 2h · Priority: Urgent)*
 
   **Description:**
   - Viết hàm `build_graph()` đọc JSON tọa độ.
@@ -147,13 +147,13 @@ HCM-Route-Finder/
 
 # DAY 4 — A* IMPLEMENTATION
 
-- [ ] **TSK-014** `[Algorithm]` Implement Min Heap / Priority Queue. *(Estimate: 0.5h · Priority: Urgent)*
+- [x] **TSK-014** `[Algorithm]` Implement Min Heap / Priority Queue. *(Estimate: 0.5h · Priority: Urgent)*
 
   **Description:**
   - Import module `heapq` có sẵn của Python.
   - Cơ chế: dùng mảng `pq = []` và đẩy các tuple (`f_score, node_id`) vào thông qua `heapq.heappush(pq, (...))`.
 
-- [ ] **TSK-015** `[Algorithm]` Implement thuật toán A* (A-Star). *(Estimate: 3h · Priority: Urgent)*
+- [x] **TSK-015** `[Algorithm]` Implement thuật toán A* (A-Star). *(Estimate: 3h · Priority: Urgent)*
 
   **Description:**
   - Khởi tạo từ điển `g_score`, `f_score`, và `came_from`.
@@ -162,7 +162,7 @@ HCM-Route-Finder/
   - Dừng sớm nếu `current == end_id`.
   - Trả về danh sách thứ tự `node_id` và tổng khoảng cách.
 
-- [ ] **TSK-016** `[Algorithm]` Tìm Nearest Node bằng RAM (Spatial Query). *(Estimate: 1.5h · Priority: High)*
+- [x] **TSK-016** `[Algorithm]` Tìm Nearest Node bằng RAM (Spatial Query). *(Estimate: 1.5h · Priority: High)*
 
   **Description:**
   - Viết hàm `find_nearest_node(lat, lng)` trong Python.
