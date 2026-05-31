@@ -5,7 +5,7 @@
 ```txt
 HCM-Route-Finder/
 ├── frontend/             # NextJS, Tailwind, Leaflet
-├── backend/              # Golang, Gin, Dijkstra
+├── backend/              # Python, FastAPI, A* Algorithm
 ├── data/                 # File OSM, Scripts SQL, Docker configs
 ├── docs/                 # Tài liệu, Screenshots
 ├── docker-compose.yml    # Chạy DB, Backend, Frontend
@@ -67,21 +67,13 @@ HCM-Route-Finder/
 
 # DAY 2 — BACKEND + DATABASE + OSM DATA
 
-- [x] **TSK-006** `[BE_Core]` Khởi tạo Golang Backend với Gin. *(Estimate: 1.5h · Priority: Urgent)*
+- [ ] **TSK-006** `[BE_Core]` Khởi tạo Golang Backend với FastAPI. *(Estimate: 1h · Priority: Urgent)*
 
   **Description:**
-  - Initialize:
-    ```bash
-    go mod init hcm-route-finder
-    go get github.com/gin-gonic/gin
-    ```
-  - Tạo structure:
-    ```txt
-    internal/
-    ├── api/
-    ├── graph/
-    ├── db/
-    └── models/
+  - Setup môi trường ảo (`venv`): `python -m venv venv`
+  - Tạo `requirement.txt` và cài đặt thư viện: `fastapi`, `uvicorn`, `psycopg2-binary`.
+  - Tạo file `main.py`, khởi tạo `app = FastAPI()` và cấu hình `CORS`.
+  - Tạo API test `GET /api/v1/ping`.
     ```
 
 - [x] **TSK-007** `[Infra]` Setup PostgreSQL + PostGIS bằng Docker Compose. *(Estimate: 1.5h · Priority: Urgent)*
@@ -122,102 +114,102 @@ HCM-Route-Finder/
   - Trích xuất thông tin `oneway`.
   - Dùng PostGIS tính chiều dài đường: `ST_Length(way::geography) AS distance`.
 
-- [x] **TSK-011** `[BE_Data]` Query Data vào Golang. *(Estimate: 1h · Priority: Urgent)*
+- [ ] **TSK-011** `[BE_Data]` Query Data bằng Python. *(Estimate: 1h · Priority: Urgent)*
 
   **Description:**
-  - Viết hàm Golang kết nối DB và chạy câu Query TSK-010.
-  - Parse kết quả SQL trả về dạng array các `Edge` để chuẩn bị build Graph.
+  - Viết module `db.py` dùng `psycopg2` để kết nối tới PostgreSQL.
+  - Sử dụng hàm `cursor.fetchall()` để nạp toàn bộ kết quả SQLvào RAM dưới dạng list các Dictionary hoặc Tuples.
 
-- [x] **TSK-012** `[BE_Graph]` Thiết kế Node + Edge model. *(Estimate: 1h · Priority: Urgent)*
+- [ ] **TSK-012** `[BE_Graph]` Thiết kế Node + Edge model. *(Estimate: 1h · Priority: Urgent)*
 
   **Description:**
-  - Define structs:
-    ```go
-    type Node struct {
-        ID       int64
-        Lat, Lng float64
-    }
+  - Dùng `dataclass` để định nghĩa:
+    ```py
+    class Node:
+        id: int
+        lat: float
+        lng: float
 
-    type Edge struct {
-        To       int64
-        Distance float64
-    }
+    class Edge:
+        to_node: int
+        weight: float
     ```
 
-- [x] **TSK-013** `[BE_Graph]` Build adjacency list graph vào Memory. *(Estimate: 2h · Priority: Urgent)*
+- [ ] **TSK-013** `[BE_Graph]` Build adjacency list graph vào Memory. *(Estimate: 2h · Priority: Urgent)*
 
   **Description:**
-  - Build: `map[int64][]Edge`
-  - Xử lý `oneway=yes`: chỉ thêm 1 chiều (A -> B).
-  - Nếu đường 2 chiều (default): Thêm cả 2 chiều (A -> B và B -> A).
-  - Viết function load graph 1 lần duy nhất khi Golang server start.
+  - Viết hàm `build_graph()` đọc JSON tọa độ.
+  - Khởi tạo `nodes: dict[int, Node]` và `edges: dict[int, list[Edge]]`.
+  - Xử lý `oneway=yes`: chỉ nối 1 chiều (A -> B). Nếu rỗng nối cả 2 chiều.
+  - Chạy hàm này 1 lần duy nhất bằng Event `@app.on_event("startup")` của FastAPI.
 
 ---
 
-# DAY 4 — DIJKSTRA IMPLEMENTATION
+# DAY 4 — A* IMPLEMENTATION
 
-- [x] **TSK-014** `[Algorithm]` Implement Min Heap / Priority Queue. *(Estimate: 1.5h · Priority: Urgent)*
-
-  **Description:**
-  - Implement `heap.Interface` từ package `container/heap` của Go.
-  - Push, Pop với priority = distance.
-  - Struct `Item { NodeID, Distance, Index }`.
-
-- [x] **TSK-015** `[Algorithm]` Implement thuật toán Dijkstra. *(Estimate: 3h · Priority: Urgent)*
+- [ ] **TSK-014** `[Algorithm]` Implement Min Heap / Priority Queue. *(Estimate: 0.5h · Priority: Urgent)*
 
   **Description:**
-  - `dist map[int64]float64` → khởi tạo `+Inf`.
-  - `prev map[int64]int64` → reconstruct path (truy vết mảng Node ID).
-  - `visited` set để skip node đã xử lý.
-  - Return: `[]int64` (danh sách Node ID tạo thành đường đi ngắn nhất).
+  - Import module `heapq` có sẵn của Python.
+  - Cơ chế: dùng mảng `pq = []` và đẩy các tuple (`f_score, node_id`) vào thông qua `heapq.heappush(pq, (...))`.
 
-- [x] **TSK-016** `[Algorithm]` Tìm Nearest Node bằng PostGIS (Spatial Query). *(Estimate: 1.5h · Priority: High)*
+- [ ] **TSK-015** `[Algorithm]` Implement thuật toán A* (A-Star). *(Estimate: 3h · Priority: Urgent)*
 
   **Description:**
-  - Input: `lat, lng` từ click của user.
-  - Thay vì tính brute-force, bắn câu Query xuống DB:
-    ```sql
-    ORDER BY way <-> ST_SetSRID(ST_MakePoint(lng, lat), 4326) LIMIT 1;
-    ```
-  - Return: NodeID gần với điểm click nhất.
+  - Khởi tạo từ điển `g_score`, `f_score`, và `came_from`.
+  - Viết hàm tính Haversine Distance bằng `math` của Python để làm Heuristic.
+  - Vòng lặp lấy `node_id` bằng `heapq.heappop`.
+  - Dừng sớm nếu `current == end_id`.
+  - Trả về danh sách thứ tự `node_id` và tổng khoảng cách.
+
+- [ ] **TSK-016** `[Algorithm]` Tìm Nearest Node bằng RAM (Spatial Query). *(Estimate: 1.5h · Priority: High)*
+
+  **Description:**
+  - Viết hàm `find_nearest_node(lat, lng)` trong Python.
+  - Duyệt qua toàn bộ `values()` của dictionary `nodes`.
+  - Trả về `node_id` có khoảng cách Haversine ngắn nhất so với tọa độ click.
 
 ---
 
 # DAY 5 — ROUTING API & SEARCH
 
-- [x] **TSK-017** `[BE_API]` Tạo endpoint `GET /api/v1/route`. *(Estimate: 2h · Priority: Urgent)*
+- [ ] **TSK-017** `[BE_API]` Tạo endpoint `GET /api/v1/route`. *(Estimate: 2h · Priority: Urgent)*
 
   **Description:**
-  - Query params: `startLat`, `startLng`, `endLat`, `endLng`
-  - Flow: coordinate → gọi PostGIS `nearestNode()` → `Dijkstra(start, end)` → trả mảng coordinates.
-  - Thêm CORS header cho NextJS frontend gọi được.
+  - Dùng FastAPI khai báo: `@app.get("/api/v1/routes")`.
+  - Nhận query params: `startLat`, `startLng`, `endLat`, `endLng`.
+  - Flow: `find_nearest_node()` → `a_star()` → format lại toạ độ list.
 
-- [x] **TSK-018** `[BE_API]` Return GeoJSON / JSON route response. *(Estimate: 1h · Priority: High)*
+- [ ] **TSK-018** `[BE_API]` Return GeoJSON / JSON route response. *(Estimate: 1h · Priority: High)*
 
   **Description:**
   - Response format:
     ```json
     {
-      "distance": 1200.5,
-      "duration": 240,
-      "path": [[10.776, 106.700], ...]
+        "success": true,
+        "message": "Tìm đường thành công",
+        "data": {
+            "distance": 1200.5,
+            "duration": 240,
+            "path": [[10.776, 106.700], ...]
+        },
+        "errorCode": null
     }
     ```
-  - `duration` ước tính: `distance / 30 * 3.6` (giây, giả sử tốc độ 30 km/h).
 
-- [x] **TSK-019** `[BE_API]` API Tìm kiếm địa điểm (Proxy Nominatim). *(Estimate: 2h · Priority: Medium)*
-
-  **Description:**
-  - Cực kỳ hữu ích cho MVP. Tạo `GET /api/v1/search?q=Ben Thanh`
-  - Gọi HTTP GET tới `https://nominatim.openstreetmap.org/search` (Giới hạn `viewbox` ở HCM).
-  - Map response trả về format thống nhất cho FE.
-
-- [x] **TSK-020** `[BE_API]` Error handling + logging cơ bản. *(Estimate: 1h · Priority: Medium)*
+- [ ] **TSK-019** `[BE_API]` API Tìm kiếm địa điểm (Proxy Nominatim). *(Estimate: 2h · Priority: Medium)*
 
   **Description:**
-  - `404`: no path found / điểm quá xa ngoại thành.
-  - `400`: invalid coordinate.
-  - Log: request + execution response time.
+  - Tạo `@app.get("/api/v1/search")`.
+  - Dùng thư viện `httpx` hoặc `requests` để gọi API Nominatim OSM.
+  - Bắt buộc gắn header `User-Agent`.
+  - Lọc response và trả về 5 kết quả đầu tiên.
+
+- [ ] **TSK-020** `[BE_API]` Error handling + logging cơ bản. *(Estimate: 1h · Priority: Medium)*
+
+  **Description:**
+  - Validate tham số đầu vào.
+  - Trả lỗi 404 (Không tìm thấy đường) hoặc 400 (Thiếu tọa độ) thông qua `HTTPException` .
 
 ---
 
@@ -307,7 +299,7 @@ HCM-Route-Finder/
 
 # Post-MVP (Optional)
 
-- [ ] Thuật toán A* (nhanh hơn Dijkstra ~2-5x nhờ kết hợp heuristic).
+- [x] Thuật toán A* (nhanh hơn Dijkstra ~2-5x nhờ kết hợp heuristic).
 - [ ] Redis cache những tuyến đường phổ biến.
 - [ ] Dark mode cho bản đồ (Dùng CartoDB Dark Matter tile).
 - [ ] Route animation (Hiệu ứng xe chạy theo đường nét đứt).
