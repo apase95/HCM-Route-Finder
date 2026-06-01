@@ -173,14 +173,14 @@ HCM-Route-Finder/
 
 # DAY 5 — ROUTING API & SEARCH
 
-- [ ] **TSK-017** `[BE_API]` Tạo endpoint `GET /api/v1/route`. *(Estimate: 2h · Priority: Urgent)*
+- [x] **TSK-017** `[BE_API]` Tạo endpoint `GET /api/v1/route`. *(Estimate: 2h · Priority: Urgent)*
 
   **Description:**
   - Dùng FastAPI khai báo: `@app.get("/api/v1/routes")`.
   - Nhận query params: `startLat`, `startLng`, `endLat`, `endLng`.
   - Flow: `find_nearest_node()` → `a_star()` → format lại toạ độ list.
 
-- [ ] **TSK-018** `[BE_API]` Return GeoJSON / JSON route response. *(Estimate: 1h · Priority: High)*
+- [x] **TSK-018** `[BE_API]` Return GeoJSON / JSON route response. *(Estimate: 1h · Priority: High)*
 
   **Description:**
   - Response format:
@@ -197,7 +197,7 @@ HCM-Route-Finder/
     }
     ```
 
-- [ ] **TSK-019** `[BE_API]` API Tìm kiếm địa điểm (Proxy Nominatim). *(Estimate: 2h · Priority: Medium)*
+- [x] **TSK-019** `[BE_API]` API Tìm kiếm địa điểm (Proxy Nominatim). *(Estimate: 2h · Priority: Medium)*
 
   **Description:**
   - Tạo `@app.get("/api/v1/search")`.
@@ -273,7 +273,7 @@ HCM-Route-Finder/
 
   **Description:**
   - `Dockerfile` cho NextJS (multi-stage build)
-  - `Dockerfile` cho Go (alpine build nhỏ gọn)
+  - `Dockerfile` cho Python (alpine build nhỏ gọn)
   - Hoàn thiện `docker-compose.yml`: Chạy 1 lệnh `docker compose up` lên cả Postgres + Backend + Frontend.
 
 - [ ] **TSK-029** `[Docs]` Update README + demo screenshots. *(Estimate: 1h · Priority: Medium)*

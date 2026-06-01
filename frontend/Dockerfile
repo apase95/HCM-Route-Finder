@@ -1,19 +1,17 @@
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /app
 
-# Cài đặt pnpm
 RUN corepack enable pnpm
 
 COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 COPY . .
 RUN pnpm build
 
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
 
-# Cài pnpm cho stage runner
 RUN corepack enable pnpm
 
 COPY --from=builder /app/package.json ./

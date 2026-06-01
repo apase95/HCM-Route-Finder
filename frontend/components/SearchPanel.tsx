@@ -12,17 +12,18 @@ interface SearchResult {
 interface SearchInputProps {
     placeholder: string;
     icon: React.ReactNode;
-    onSelect: (lat: number, lng: number) => void;
+    value: string;
+    onChangeText: (val: string) => void;
+    onSelect: (lat: number, lng: number, name: string) => void;
 }
 
-function SearchInput({ placeholder, icon, onSelect }: SearchInputProps) {
-    const [query, setQuery] = useState("");
+function SearchInput({ placeholder, icon, value, onChangeText, onSelect }: SearchInputProps) {
     const [results, setResults] = useState<SearchResult[]>([]);
     const [loading, setLoading] = useState(false);
     const [showDropdown, setShowDropdown] = useState(false);
 
     useEffect(() => {
-        if (query.trim().length < 2) {
+        if (value.trim().length < 2 || value.includes("📍")) {
             setResults([]);
             return;
         }
@@ -30,7 +31,7 @@ function SearchInput({ placeholder, icon, onSelect }: SearchInputProps) {
         const timer = setTimeout(async () => {
             setLoading(true);
             try {
-                const res = await fetch(`http://localhost:8080/api/v1/search?q=${encodeURIComponent(query)}`);
+                const res = await fetch(`http://localhost:8080/api/v1/search?q=${encodeURIComponent(value)}`);
                 const json = await res.json();
                 if (json.success) {
                     setResults(json.data || []);
@@ -43,7 +44,7 @@ function SearchInput({ placeholder, icon, onSelect }: SearchInputProps) {
         }, 500);
 
         return () => clearTimeout(timer);
-    }, [query]);
+    }, [value]);
 
     return (
         <div className="relative w-full mb-3">
@@ -51,11 +52,11 @@ function SearchInput({ placeholder, icon, onSelect }: SearchInputProps) {
                 <div className="text-gray-500 mr-2">{icon}</div>
                 <input
                     type="text"
-                    className="w-full bg-transparent outline-none text-sm text-gray-700 placeholder-gray-400"
+                    className="w-full bg-transparent outline-none text-sm text-gray-700 placeholder-gray-400 font-medium"
                     placeholder={placeholder}
-                    value={query}
+                    value={value}
                     onChange={(e) => {
-                        setQuery(e.target.value);
+                        onChangeText(e.target.value);
                         setShowDropdown(true);
                     }}
                     onFocus={() => setShowDropdown(true)}
@@ -71,9 +72,9 @@ function SearchInput({ placeholder, icon, onSelect }: SearchInputProps) {
                             key={i}
                             className="p-3 hover:bg-blue-50 cursor-pointer text-sm border-b last:border-b-0"
                             onClick={() => {
-                                setQuery(r.name.split(',')[0]); 
+                                const shortName = r.name.split(',')[0];
                                 setShowDropdown(false);
-                                onSelect(r.lat, r.lng);
+                                onSelect(r.lat, r.lng, shortName);
                             }}
                         >
                             <p className="font-medium text-gray-800 line-clamp-1">{r.name.split(',')[0]}</p>
@@ -87,13 +88,20 @@ function SearchInput({ placeholder, icon, onSelect }: SearchInputProps) {
 }
 
 interface Props {
+    startText: string;
+    endText: string;
+    setStartText: (text: string) => void;
+    setEndText: (text: string) => void;
     onSelectStart: (lat: number, lng: number) => void;
     onSelectEnd: (lat: number, lng: number) => void;
     onFindRoute: () => void;
     isLoading: boolean;
 }
 
-export default function SearchPanel({ onSelectStart, onSelectEnd, onFindRoute, isLoading }: Props) {
+export default function SearchPanel({ 
+    startText, endText, setStartText, setEndText, 
+    onSelectStart, onSelectEnd, onFindRoute, isLoading 
+}: Props) {
     return (
         <div className="absolute top-6 left-6 z-[1000] w-80 bg-white p-5 rounded-2xl shadow-xl border border-gray-200">
             <h2 className="text-xl font-bold text-gray-800 mb-4">📍 Tìm đường đi</h2>
@@ -101,13 +109,23 @@ export default function SearchPanel({ onSelectStart, onSelectEnd, onFindRoute, i
             <SearchInput
                 placeholder="Tìm điểm xuất phát..."
                 icon={<Navigation className="w-5 h-5 text-green-500" />}
-                onSelect={onSelectStart}
+                value={startText}
+                onChangeText={setStartText}
+                onSelect={(lat, lng, name) => {
+                    setStartText(name);
+                    onSelectStart(lat, lng);
+                }}
             />
             
             <SearchInput
                 placeholder="Tìm điểm đến..."
                 icon={<MapPin className="w-5 h-5 text-red-500" />}
-                onSelect={onSelectEnd}
+                value={endText}
+                onChangeText={setEndText}
+                onSelect={(lat, lng, name) => {
+                    setEndText(name);
+                    onSelectEnd(lat, lng);
+                }}
             />
 
             <button 
