@@ -8,21 +8,22 @@ Dự án Web Application tìm kiếm đường đi ngắn nhất trong khu vực
 
 - Hiển thị bản đồ nội thành TP.HCM với độ phản hồi cao.
 - Cho phép người dùng tương tác click chọn điểm Đi và điểm Đến trực tiếp trên bản đồ.
-- Hỗ trợ tìm kiếm địa điểm qua văn bản (Geocoding API).
-- Tính toán đường đi ngắn nhất tuân thủ theo mạng lưới giao thông thực tế (đường một chiều, loại đường cho phép).
-- Hiển thị thông tin tổng quãng đường và thời gian dự kiến.
+- Hỗ trợ tìm kiếm địa điểm thông minh qua văn bản (Geocoding API Proxy từ Nominatim).
+- Tự động lấy vị trí hiện tại của người dùng (Geolocation) nếu không chọn điểm xuất phát.
+- Tính toán đường đi ngắn nhất tuân thủ theo mạng lưới giao thông thực tế (đường một chiều).
+- Hiển thị thông tin tổng quãng đường và thời gian dự kiến di chuyển.
 
 ## Thuật toán và Kiến trúc (Architecture Notes)
 
-- **Thuật toán A* (A-Star):** Nâng cấp từ Dijkstra, sử dụng hàm Heuristic (Haversine Distance - khoảng cách đường chim bay) để định hướng tìm kiếm thẳng về đích, giúp tăng tốc độ tìm đường lên gấp 3-5 lần.
-- **Xử lý không gian (Spatial Processing):** Thuật toán tự viết trên Golang giúp duyệt nhanh qua hơn 230,000 Nodes trên RAM chỉ trong ~2ms để tìm điểm giao thông gần nhất với vị trí người dùng.
+- **Thuật toán A* (A-Star):** Sử dụng hàm Heuristic (Haversine Distance - khoảng cách đường chim bay) để định hướng tìm kiếm thẳng về đích.
+- **Xử lý không gian (Spatial Processing):** Thuật toán tự viết trên Python giúp duyệt nhanh qua hơn 230,000 Nodes trên RAM để tìm điểm giao thông gần nhất với vị trí người dùng.
 - **In-Memory Graph:** Toàn bộ Node và Edge được Backend query từ Database (PostGIS) và lưu sẵn vào cấu trúc dữ liệu Adjacency List (Map) trên RAM ngay lúc khởi động server, loại bỏ độ trễ do I/O Database.
 
 
 ## Tech Stack
 
 - **Frontend:** Next.js (App Router), TypeScript, Tailwind CSS, Leaflet (React-Leaflet).
-- **Backend:** Golang, Gin Framework.
+- **Backend:** Python, FastAPI.
 - **Database:** PostgreSQL tích hợp extension PostGIS.
 - **Thuật toán:** A* (A-Star) Routing Algorithm, Haversine Formula.
 - **Dữ liệu:** OpenStreetMap (OSM) - Định dạng `.osm.pbf`.
@@ -35,7 +36,7 @@ Dự án Web Application tìm kiếm đường đi ngắn nhất trong khu vực
 ```txt
 HCM-Route-Finder/
 ├── frontend/             # Next.js application
-├── backend/              # Golang REST API
+├── backend/              # Python FastAPI
 ├── data/                 # Thư mục chứa dữ liệu OSM và script import DB
 ├── docs/                 # Tài liệu dự án, quy chuẩn làm việc
 ├── docker-compose.yml    # File cấu hình khởi chạy Database/Services
