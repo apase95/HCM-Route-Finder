@@ -62,6 +62,8 @@ export default function MapView() {
 
     const [startPoint, setStartPoint] = useState<[number, number] | null>(null);
     const [endPoint, setEndPoint] = useState<[number, number] | null>(null);
+    const [startText, setStartText] = useState("");
+    const [endText, setEndText] = useState("");
     const [lastActivePoint, setLastActivePoint] = useState<[number, number] | null>(null);
     
     const [routePath, setRoutePath] = useState<[number, number][]>([]);
@@ -118,6 +120,7 @@ export default function MapView() {
                         const currentLoc: [number, number] = [position.coords.latitude, position.coords.longitude];
                         setStartPoint(currentLoc);
                         setLastActivePoint(currentLoc);
+                        setStartText("Vị trí hiện tại của bạn");
                         fetchRoute(currentLoc, endPoint);
                     },
                     (error) => {
@@ -146,12 +149,11 @@ export default function MapView() {
     const handleClearRoute = () => {
         setStartPoint(null);
         setEndPoint(null);
+        setStartText("");
+        setEndText(""); 
         setRoutePath([]);
         setRouteInfo(null);
         setLastActivePoint(center);
-        
-        // (Tùy chọn) Reload trang để reset sạch sẽ luôn cả ô Input
-        // window.location.reload(); 
     };
 
     return (
@@ -159,11 +161,16 @@ export default function MapView() {
             <LeafletIconFix />
             
             <SearchPanel 
+                startText={startText}
+                endText={endText}
+                setStartText={setStartText}
+                setEndText={setEndText}
                 onSelectStart={(lat, lng) => {
+                    
                     setStartPoint([lat, lng]);
                     setLastActivePoint([lat, lng]);
                     setRoutePath([]);
-                    setRouteInfo(null); // Reset info
+                    setRouteInfo(null);
                 }}
                 onSelectEnd={(lat, lng) => {
                     setEndPoint([lat, lng]);
