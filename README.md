@@ -12,6 +12,10 @@ Dự án Web Application tìm kiếm đường đi ngắn nhất trong khu vực
 - Tính toán đường đi ngắn nhất tuân thủ theo mạng lưới giao thông thực tế (đường một chiều, loại đường cho phép).
 - Hiển thị thông tin tổng quãng đường và thời gian dự kiến.
 
+<img width="1909" height="1003" alt="image" src="https://github.com/user-attachments/assets/f386c5f2-a514-4342-a94a-026aee57b5f9" />
+<img width="1909" height="1003" alt="image" src="https://github.com/user-attachments/assets/9986f385-4c15-48f9-9f10-643b72c75fa9" />
+
+
 ## Thuật toán và Kiến trúc (Architecture Notes)
 
 - **Thuật toán A* (A-Star):** Nâng cấp từ Dijkstra, sử dụng hàm Heuristic (Haversine Distance - khoảng cách đường chim bay) để định hướng tìm kiếm thẳng về đích, giúp tăng tốc độ tìm đường lên gấp 3-5 lần.
