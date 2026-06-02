@@ -68,8 +68,10 @@ export default function MapView() {
     
     const [routePath, setRoutePath] = useState<[number, number][]>([]);
     const [isRouting, setIsRouting] = useState(false);
+
+    const [vehicle, setVehicle] = useState("car");
+    const [activeVehicle, setActiveVehicle] = useState("car");
     
-    // THÊM MỚI: State lưu thông tin quãng đường và thời gian
     const [routeInfo, setRouteInfo] = useState<{ distance: number; duration: number } | null>(null);
 
     const handleMapClick = (lat: number, lng: number) => {
@@ -83,19 +85,19 @@ export default function MapView() {
         }
     };
 
-    const fetchRoute = async (start: [number, number], end: [number, number]) => {
+    const fetchRoute = async (start: [number, number], end: [number, number], selectedVehicle: string) => {
         setIsRouting(true);
         try {
-            const res = await fetch(`http://localhost:8080/api/v1/routes?startLat=${start[0]}&startLng=${start[1]}&endLat=${end[0]}&endLng=${end[1]}`);
+            const res = await fetch(`http://localhost:8080/api/v1/routes?startLat=${start[0]}&startLng=${start[1]}&endLat=${end[0]}&endLng=${end[1]}&vehicle=${selectedVehicle}`);
             const data = await res.json();
             
             if (data.success) {
                 setRoutePath(data.data.path);
-                // THÊM MỚI: Lưu thông tin quãng đường & thời gian
                 setRouteInfo({
                     distance: data.data.distance,
                     duration: data.data.duration
                 });
+                setActiveVehicle(selectedVehicle);
             } else {
                 alert("Lỗi: " + data.message);
             }
@@ -121,7 +123,7 @@ export default function MapView() {
                         setStartPoint(currentLoc);
                         setLastActivePoint(currentLoc);
                         setStartText("Vị trí hiện tại của bạn");
-                        fetchRoute(currentLoc, endPoint);
+                        fetchRoute(currentLoc, endPoint, vehicle);
                     },
                     (error) => {
                         setIsRouting(false);
@@ -133,11 +135,10 @@ export default function MapView() {
                 alert("Trình duyệt của bạn không hỗ trợ định vị.");
             }
         } else {
-            fetchRoute(startPoint, endPoint);
+            fetchRoute(startPoint, endPoint, vehicle);
         }
     };
 
-    // Hàm format khoảng cách cho đẹp mắt
     const formatDistance = (meters: number) => {
         if (meters >= 1000) {
             return (meters / 1000).toFixed(1) + " km";
@@ -176,6 +177,8 @@ export default function MapView() {
                     setEndPoint([lat, lng]);
                     setLastActivePoint([lat, lng]);
                 }}
+                vehicle={vehicle}
+                setVehicle={setVehicle}
                 onFindRoute={handleFindRoute}
                 isLoading={isRouting}
             />
@@ -192,7 +195,9 @@ export default function MapView() {
                     <div className="h-10 w-px bg-gray-200"></div>
                     
                     <div className="flex flex-col items-center">
-                        <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Thời gian (Ô tô)</p>
+                        <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">
+                            Thời gian ({activeVehicle === 'car' ? 'Ô tô' : activeVehicle === 'bike' ? 'Xe máy' : 'Đi bộ'})
+                        </p>
                         <p className="text-2xl font-black text-green-600">
                             {Math.ceil(routeInfo.duration / 60)} <span className="text-lg">phút</span>
                         </p>

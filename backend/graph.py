@@ -13,9 +13,12 @@ class Node:
 class Edge:
     to_node: int
     weight: float
+    allow_car: bool
+    allow_bike: bool
+    allow_foot: bool
 
 def haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    R = 6371000  # Bán kính trái đất (mét)
+    R = 6371000
     d_lat = math.radians(lat2 - lat1)
     d_lon = math.radians(lon2 - lon1)
     a = (math.sin(d_lat / 2) ** 2 +
@@ -45,6 +48,13 @@ class RouteGraph:
             if len(coords) < 2:
                 continue
 
+            highway = road.get("highway", "")
+            is_oneway = road.get("oneway") == "yes"
+
+            allow_car = highway not in ['footway', 'pedestrian', 'steps', 'path', 'cycleway']
+            allow_bike = highway not in ['footway', 'pedestrian', 'steps']
+            allow_foot = highway not in ['motorway', 'trunk', 'motorway_link', 'trunk_link']
+
             for i in range(len(coords) - 1):
                 lng1, lat1 = coords[i]
                 lng2, lat2 = coords[i + 1]
@@ -68,10 +78,12 @@ class RouteGraph:
 
                 dist = haversine(lat1, lng1, lat2, lng2)
 
-                self.edges[id1].append(Edge(to_node=id2, weight=dist))
+                self.edges[id1].append(Edge(id2, dist, allow_car, allow_bike, allow_foot))
 
-                if road.get("oneway") != "yes":
-                    self.edges[id2].append(Edge(to_node=id1, weight=dist))
+                if is_oneway:
+                    self.edges[id2].append(Edge(id1, dist, allow_car=False, allow_bike=False, allow_foot=allow_foot))
+                else:
+                    self.edges[id2].append(Edge(id1, dist, allow_car, allow_bike, allow_foot))
 
         total_edges = sum(len(e) for e in self.edges.values())
         print(f"✅ Xây dựng Graph hoàn tất: [{len(self.nodes)} Nodes] và [{total_edges} Edges]")
