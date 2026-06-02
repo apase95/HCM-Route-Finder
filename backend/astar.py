@@ -2,7 +2,7 @@ import heapq
 from typing import List, Tuple
 from graph import RouteGraph, haversine
 
-def find_path_astar(graph: RouteGraph, start_id: int, end_id: int) -> Tuple[List[int], float]:
+def find_path_astar(graph: RouteGraph, start_id: int, end_id: int, vehicle_type: str = "car") -> Tuple[List[int], float]:
     """
     Tìm đường đi ngắn nhất sử dụng thuật toán A*.
     Trả về: (danh_sách_node_id, tổng_khoảng_cách)
@@ -34,6 +34,10 @@ def find_path_astar(graph: RouteGraph, start_id: int, end_id: int) -> Tuple[List
         
         # Duyệt qua các con đường nối với Node hiện tại
         for edge in graph.edges.get(current_id, []):
+            if vehicle_type == "car" and not edge.allow_car: continue
+            if vehicle_type == "bike" and not edge.allow_bike: continue
+            if vehicle_type == "foot" and not edge.allow_foot: continue
+
             neighbor = edge.to_node
             tentative_g = current_g + edge.weight
             

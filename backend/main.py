@@ -63,34 +63,32 @@ async def ping():
     }
 
 @app.get("/api/v1/routes")
-async def get_route(startLat: float, startLng: float, endLat: float, endLng: float):
+async def get_route(startLat: float, startLng: float, endLat: float, endLng: float, vehicle: str = "car"):
     start_node_id = route_graph.find_nearest_node(startLat, startLng)
     end_node_id = route_graph.find_nearest_node(endLat, endLng)
     
-    path_ids, distance = find_path_astar(route_graph, start_node_id, end_node_id)
+    # Truyền vehicle_type vào A*
+    path_ids, distance = find_path_astar(route_graph, start_node_id, end_node_id, vehicle)
     
     if not path_ids:
-        return JSONResponse(
-            status_code=404,
-            content={
-                "success": False,
-                "message": "Không thể tìm thấy đường đi giữa 2 điểm này",
-                "data": None,
-                "errorCode": "ROUTE_NOT_FOUND"
-            }
-        )
+        return JSONResponse(status_code=404, content={
+                "success": False, "message": "Không tìm thấy đường đi cho phương tiện này", "data": None, "errorCode": "ROUTE_NOT_FOUND"
+        })
         
     coords = [[route_graph.nodes[nid].lat, route_graph.nodes[nid].lng] for nid in path_ids]
-    duration_seconds = distance / (30.0 / 3.6)
+    
+    # Tính thời gian tùy theo phương tiện
+    if vehicle == "foot":
+        duration_seconds = distance / (5.0 / 3.6)   # Đi bộ: 5 km/h
+    elif vehicle == "bike":
+        duration_seconds = distance / (40.0 / 3.6)  # Xe máy: 40 km/h
+    else:
+        duration_seconds = distance / (30.0 / 3.6)  # Ô tô: 30 km/h
     
     return {
         "success": True,
         "message": "Tìm đường thành công",
-        "data": {
-            "distance": distance,
-            "duration": duration_seconds,
-            "path": coords
-        },
+        "data": { "distance": distance, "duration": duration_seconds, "path": coords },
         "errorCode": None
     }
 
