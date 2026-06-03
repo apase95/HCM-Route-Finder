@@ -37,13 +37,14 @@ const MapController = ({ center }: { center: [number, number] | null }) => {
     return null;
 };
 
-const RouteFitter = ({ path }: { path: [number, number][] }) => {
+const RouteFitter = ({ segments }: { segments: {color: string, path: [number, number][]}[] }) => {
     const map = useMap();
     useEffect(() => {
-        if (path.length > 0) {
-            map.fitBounds(path, { padding: [50, 50] });
+        if (segments.length > 0) {
+            const allCoords = segments.flatMap(s => s.path);
+            map.fitBounds(allCoords, { padding: [50, 50] });
         }
-    }, [path, map]);
+    }, [segments, map]);
     return null;
 };
 
@@ -73,26 +74,31 @@ export default function MapView() {
     const [activeVehicle, setActiveVehicle] = useState("car");
     
     const [routeInfo, setRouteInfo] = useState<{ distance: number; duration: number } | null>(null);
+    const [routeSegments, setRouteSegments] = useState<{color: string, path: [number, number][]}[]>([]);
+    const [avoidTraffic, setAvoidTraffic] = useState(false);
 
     const handleMapClick = (lat: number, lng: number) => {
         if (!startPoint || (startPoint && endPoint)) {
             setStartPoint([lat, lng]);
             setEndPoint(null);
-            setRoutePath([]);
+            setStartText("📍 Đã chọn trên bản đồ");
+            setEndText("");
+            setRouteSegments([]);
             setRouteInfo(null);
         } else if (!endPoint) {
             setEndPoint([lat, lng]);
+            setEndText("📍 Đã chọn trên bản đồ");
         }
     };
 
-    const fetchRoute = async (start: [number, number], end: [number, number], selectedVehicle: string) => {
+    const fetchRoute = async (start: [number, number], end: [number, number], selectedVehicle: string, avoid: boolean) => {
         setIsRouting(true);
         try {
-            const res = await fetch(`http://localhost:8080/api/v1/routes?startLat=${start[0]}&startLng=${start[1]}&endLat=${end[0]}&endLng=${end[1]}&vehicle=${selectedVehicle}`);
+            const res = await fetch(`http://localhost:8080/api/v1/routes?startLat=${start[0]}&startLng=${start[1]}&endLat=${end[0]}&endLng=${end[1]}&vehicle=${selectedVehicle}&avoidTraffic=${avoid}`);
             const data = await res.json();
             
             if (data.success) {
-                setRoutePath(data.data.path);
+                setRouteSegments(data.data.segments);
                 setRouteInfo({
                     distance: data.data.distance,
                     duration: data.data.duration
@@ -102,6 +108,7 @@ export default function MapView() {
                 alert("Lỗi: " + data.message);
             }
         } catch (error) {
+            console.error(error);
             alert("Lỗi kết nối đến server tìm đường.");
         } finally {
             setIsRouting(false);
@@ -123,7 +130,7 @@ export default function MapView() {
                         setStartPoint(currentLoc);
                         setLastActivePoint(currentLoc);
                         setStartText("Vị trí hiện tại của bạn");
-                        fetchRoute(currentLoc, endPoint, vehicle);
+                        fetchRoute(currentLoc, endPoint, vehicle, avoidTraffic);
                     },
                     (error) => {
                         setIsRouting(false);
@@ -135,7 +142,7 @@ export default function MapView() {
                 alert("Trình duyệt của bạn không hỗ trợ định vị.");
             }
         } else {
-            fetchRoute(startPoint, endPoint, vehicle);
+            fetchRoute(startPoint, endPoint, vehicle, avoidTraffic);
         }
     };
 
@@ -152,7 +159,7 @@ export default function MapView() {
         setEndPoint(null);
         setStartText("");
         setEndText(""); 
-        setRoutePath([]);
+        setRouteSegments([])
         setRouteInfo(null);
         setLastActivePoint(center);
     };
@@ -170,7 +177,7 @@ export default function MapView() {
                     
                     setStartPoint([lat, lng]);
                     setLastActivePoint([lat, lng]);
-                    setRoutePath([]);
+                    setRouteSegments([])
                     setRouteInfo(null);
                 }}
                 onSelectEnd={(lat, lng) => {
@@ -181,6 +188,8 @@ export default function MapView() {
                 setVehicle={setVehicle}
                 onFindRoute={handleFindRoute}
                 isLoading={isRouting}
+                avoidTraffic={avoidTraffic}
+                setAvoidTraffic={setAvoidTraffic}
             />
 
             {routeInfo && (
@@ -221,7 +230,7 @@ export default function MapView() {
                 
                 <MapEventsHandler onMapClick={handleMapClick} />
                 <MapController center={lastActivePoint} />
-                <RouteFitter path={routePath} />
+                <RouteFitter segments={routeSegments} />
 
                 {startPoint && (
                     <Marker position={startPoint} icon={startIcon}>
@@ -235,16 +244,16 @@ export default function MapView() {
                     </Marker>
                 )}
 
-                {routePath.length > 0 && (
+                {routeSegments.map((segment, idx) => (
                     <Polyline 
-                        positions={routePath} 
-                        color="#2563eb" 
-                        weight={5} 
-                        opacity={0.8}
-                        lineCap="round"
-                        lineJoin="round"
+                        key={idx}
+                        positions={segment.path} 
+                        color={segment.color === 'red' ? '#ef4444' : segment.color === 'yellow' ? '#f59e0b' : '#22c55e'} 
+                        weight={6} 
+                        opacity={0.9}
+                        lineCap="round" lineJoin="round"
                     />
-                )}
+                ))}
             </MapContainer>
         </div>
     );
