@@ -15,9 +15,6 @@ Dự án Web Application tìm kiếm đường đi ngắn nhất trong khu vực
 - **Định vị & Tìm kiếm thông minh:** Tự động lấy vị trí hiện tại (Geolocation) nếu người dùng không chọn điểm xuất phát. Tích hợp Autocomplete tìm kiếm địa danh qua Geocoding API (Proxy từ Nominatim).
 - **Trải nghiệm UX/UI mượt mà:** Click đúp để chọn điểm, camera bản đồ tự động bay (flyTo) và căn chỉnh (fitBounds) vừa vặn khung hình theo lộ trình.
 
-<img width="1909" height="1003" alt="image" src="https://github.com/user-attachments/assets/f386c5f2-a514-4342-a94a-026aee57b5f9" />
-<img width="1909" height="1003" alt="image" src="https://github.com/user-attachments/assets/9986f385-4c15-48f9-9f10-643b72c75fa9" />
-
 
 ## Thuật toán và Kiến trúc (Architecture Notes)
 
