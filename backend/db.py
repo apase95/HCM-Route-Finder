@@ -10,6 +10,7 @@ def fetch_all_roads():
     query = """
         SELECT 
             osm_id,
+            name,
             oneway,
             highway,
             ST_AsGeoJSON(ST_Transform(way, 4326)) AS geojson,
