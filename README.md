@@ -6,18 +6,16 @@ Dự án Web Application tìm kiếm đường đi ngắn nhất trong khu vực
 
 ## Tính năng chính (Features)
 
-- Hiển thị bản đồ nội thành TP.HCM với độ phản hồi cao.
-- Cho phép người dùng tương tác click chọn điểm Đi và điểm Đến trực tiếp trên bản đồ.
-- Hỗ trợ tìm kiếm địa điểm thông minh qua văn bản (Geocoding API Proxy từ Nominatim).
-- Tự động lấy vị trí hiện tại của người dùng (Geolocation) nếu không chọn điểm xuất phát.
-- Tính toán đường đi ngắn nhất tuân thủ theo mạng lưới giao thông thực tế (đường một chiều).
-- Hiển thị thông tin tổng quãng đường và thời gian dự kiến di chuyển.
+- **Tùy chọn phương tiện di chuyển:** Hỗ trợ định tuyến thông minh cho **Ô tô, Xe máy và Đi bộ**. Thuật toán tự động nhận diện đường cấm ô tô, đường 1 chiều (đi bộ được phép đi ngược chiều) và các hẻm nhỏ.
+- **Giám sát & Tránh điểm đen giao thông:** Bản đồ tự động render đường đi theo màu sắc cảnh báo (🔴 Đỏ: Kẹt/Ngập, 🟡 Vàng: Đông đúc, 🟢 Xanh: Thông thoáng). Cung cấp nút **"Tránh kẹt xe / Ngập"** để thuật toán tự động bẻ lái tìm cung đường khác thoáng hơn.
+- **Định vị & Tìm kiếm thông minh:** Tự động lấy vị trí hiện tại (Geolocation) nếu người dùng không chọn điểm xuất phát. Tích hợp Autocomplete tìm kiếm địa danh qua Geocoding API (Proxy từ Nominatim).
+- **Trải nghiệm UX/UI mượt mà:** Click đúp để chọn điểm, camera bản đồ tự động bay (flyTo) và căn chỉnh (fitBounds) vừa vặn khung hình theo lộ trình.
 
 ## Thuật toán và Kiến trúc (Architecture Notes)
 
-- **Thuật toán A* (A-Star):** Sử dụng hàm Heuristic (Haversine Distance - khoảng cách đường chim bay) để định hướng tìm kiếm thẳng về đích.
-- **Xử lý không gian (Spatial Processing):** Thuật toán tự viết trên Python giúp duyệt nhanh qua hơn 230,000 Nodes trên RAM để tìm điểm giao thông gần nhất với vị trí người dùng.
-- **In-Memory Graph:** Toàn bộ Node và Edge được Backend query từ Database (PostGIS) và lưu sẵn vào cấu trúc dữ liệu Adjacency List (Map) trên RAM ngay lúc khởi động server, loại bỏ độ trễ do I/O Database.
+- **Thuật toán A* (A-Star) linh hoạt:** Nâng cấp từ Dijkstra, sử dụng hàm Heuristic (Haversine Distance - khoảng cách đường chim bay) kết hợp với **Trọng số Giao thông (Traffic Penalties)**. Tốc độ tìm đường xuyên qua 230,000+ giao lộ chỉ mất chưa tới `50ms`.
+- **In-Memory Graph:** Để loại bỏ hoàn toàn độ trễ I/O của Database, toàn bộ Node và Edge được Backend query từ PostGIS và lưu sẵn vào cấu trúc dữ liệu Adjacency List (Dictionary) trên RAM ngay lúc Server khởi động.
+- **Xử lý không gian (Spatial Processing):** Thuật toán tìm `Nearest Node` tự viết trên Python giúp duyệt qua hàng trăm ngàn tọa độ trên RAM trong thời gian `~2ms` để khớp vị trí click của người dùng với mạng lưới giao thông.
 
 
 ## Tech Stack
