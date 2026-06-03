@@ -4,6 +4,10 @@ Dự án Web Application tìm kiếm đường đi ngắn nhất trong khu vực
 
 Đường dẫn dự án: `https://github.com/apase95/HCM-Route-Finder`
 
+<img width="1909" height="1004" alt="image" src="https://github.com/user-attachments/assets/613d7881-a807-46c1-957e-fa01db080d7a" />
+<img width="1909" height="1004" alt="image" src="https://github.com/user-attachments/assets/65ac463e-3223-49af-a53b-d40e22a8818f" />
+
+
 ## Tính năng chính (Features)
 
 - **Tùy chọn phương tiện di chuyển:** Hỗ trợ định tuyến thông minh cho **Ô tô, Xe máy và Đi bộ**. Thuật toán tự động nhận diện đường cấm ô tô, đường 1 chiều (đi bộ được phép đi ngược chiều) và các hẻm nhỏ.
