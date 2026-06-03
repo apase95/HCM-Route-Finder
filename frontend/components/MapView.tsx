@@ -37,13 +37,14 @@ const MapController = ({ center }: { center: [number, number] | null }) => {
     return null;
 };
 
-const RouteFitter = ({ path }: { path: [number, number][] }) => {
+const RouteFitter = ({ segments }: { segments: {color: string, path: [number, number][]}[] }) => {
     const map = useMap();
     useEffect(() => {
-        if (path.length > 0) {
-            map.fitBounds(path, { padding: [50, 50] });
+        if (segments.length > 0) {
+            const allCoords = segments.flatMap(s => s.path);
+            map.fitBounds(allCoords, { padding: [50, 50] });
         }
-    }, [path, map]);
+    }, [segments, map]);
     return null;
 };
 
@@ -68,38 +69,46 @@ export default function MapView() {
     
     const [routePath, setRoutePath] = useState<[number, number][]>([]);
     const [isRouting, setIsRouting] = useState(false);
+
+    const [vehicle, setVehicle] = useState("car");
+    const [activeVehicle, setActiveVehicle] = useState("car");
     
-    // THÊM MỚI: State lưu thông tin quãng đường và thời gian
     const [routeInfo, setRouteInfo] = useState<{ distance: number; duration: number } | null>(null);
+    const [routeSegments, setRouteSegments] = useState<{color: string, path: [number, number][]}[]>([]);
+    const [avoidTraffic, setAvoidTraffic] = useState(false);
 
     const handleMapClick = (lat: number, lng: number) => {
         if (!startPoint || (startPoint && endPoint)) {
             setStartPoint([lat, lng]);
             setEndPoint(null);
-            setRoutePath([]);
+            setStartText("📍 Đã chọn trên bản đồ");
+            setEndText("");
+            setRouteSegments([]);
             setRouteInfo(null);
         } else if (!endPoint) {
             setEndPoint([lat, lng]);
+            setEndText("📍 Đã chọn trên bản đồ");
         }
     };
 
-    const fetchRoute = async (start: [number, number], end: [number, number]) => {
+    const fetchRoute = async (start: [number, number], end: [number, number], selectedVehicle: string, avoid: boolean) => {
         setIsRouting(true);
         try {
-            const res = await fetch(`http://localhost:8080/api/v1/routes?startLat=${start[0]}&startLng=${start[1]}&endLat=${end[0]}&endLng=${end[1]}`);
+            const res = await fetch(`http://localhost:8080/api/v1/routes?startLat=${start[0]}&startLng=${start[1]}&endLat=${end[0]}&endLng=${end[1]}&vehicle=${selectedVehicle}&avoidTraffic=${avoid}`);
             const data = await res.json();
             
             if (data.success) {
-                setRoutePath(data.data.path);
-                // THÊM MỚI: Lưu thông tin quãng đường & thời gian
+                setRouteSegments(data.data.segments);
                 setRouteInfo({
                     distance: data.data.distance,
                     duration: data.data.duration
                 });
+                setActiveVehicle(selectedVehicle);
             } else {
                 alert("Lỗi: " + data.message);
             }
         } catch (error) {
+            console.error(error);
             alert("Lỗi kết nối đến server tìm đường.");
         } finally {
             setIsRouting(false);
@@ -121,7 +130,7 @@ export default function MapView() {
                         setStartPoint(currentLoc);
                         setLastActivePoint(currentLoc);
                         setStartText("Vị trí hiện tại của bạn");
-                        fetchRoute(currentLoc, endPoint);
+                        fetchRoute(currentLoc, endPoint, vehicle, avoidTraffic);
                     },
                     (error) => {
                         setIsRouting(false);
@@ -133,11 +142,10 @@ export default function MapView() {
                 alert("Trình duyệt của bạn không hỗ trợ định vị.");
             }
         } else {
-            fetchRoute(startPoint, endPoint);
+            fetchRoute(startPoint, endPoint, vehicle, avoidTraffic);
         }
     };
 
-    // Hàm format khoảng cách cho đẹp mắt
     const formatDistance = (meters: number) => {
         if (meters >= 1000) {
             return (meters / 1000).toFixed(1) + " km";
@@ -151,7 +159,7 @@ export default function MapView() {
         setEndPoint(null);
         setStartText("");
         setEndText(""); 
-        setRoutePath([]);
+        setRouteSegments([])
         setRouteInfo(null);
         setLastActivePoint(center);
     };
@@ -169,15 +177,19 @@ export default function MapView() {
                     
                     setStartPoint([lat, lng]);
                     setLastActivePoint([lat, lng]);
-                    setRoutePath([]);
+                    setRouteSegments([])
                     setRouteInfo(null);
                 }}
                 onSelectEnd={(lat, lng) => {
                     setEndPoint([lat, lng]);
                     setLastActivePoint([lat, lng]);
                 }}
+                vehicle={vehicle}
+                setVehicle={setVehicle}
                 onFindRoute={handleFindRoute}
                 isLoading={isRouting}
+                avoidTraffic={avoidTraffic}
+                setAvoidTraffic={setAvoidTraffic}
             />
 
             {routeInfo && (
@@ -192,7 +204,9 @@ export default function MapView() {
                     <div className="h-10 w-px bg-gray-200"></div>
                     
                     <div className="flex flex-col items-center">
-                        <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Thời gian (Ô tô)</p>
+                        <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">
+                            Thời gian ({activeVehicle === 'car' ? 'Ô tô' : activeVehicle === 'bike' ? 'Xe máy' : 'Đi bộ'})
+                        </p>
                         <p className="text-2xl font-black text-green-600">
                             {Math.ceil(routeInfo.duration / 60)} <span className="text-lg">phút</span>
                         </p>
@@ -216,7 +230,7 @@ export default function MapView() {
                 
                 <MapEventsHandler onMapClick={handleMapClick} />
                 <MapController center={lastActivePoint} />
-                <RouteFitter path={routePath} />
+                <RouteFitter segments={routeSegments} />
 
                 {startPoint && (
                     <Marker position={startPoint} icon={startIcon}>
@@ -230,16 +244,16 @@ export default function MapView() {
                     </Marker>
                 )}
 
-                {routePath.length > 0 && (
+                {routeSegments.map((segment, idx) => (
                     <Polyline 
-                        positions={routePath} 
-                        color="#2563eb" 
-                        weight={5} 
-                        opacity={0.8}
-                        lineCap="round"
-                        lineJoin="round"
+                        key={idx}
+                        positions={segment.path} 
+                        color={segment.color === 'red' ? '#ef4444' : segment.color === 'yellow' ? '#f59e0b' : '#22c55e'} 
+                        weight={6} 
+                        opacity={0.9}
+                        lineCap="round" lineJoin="round"
                     />
-                )}
+                ))}
             </MapContainer>
         </div>
     );

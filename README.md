@@ -4,13 +4,16 @@ Dự án Web Application tìm kiếm đường đi ngắn nhất trong khu vực
 
 Đường dẫn dự án: `https://github.com/apase95/HCM-Route-Finder`
 
+<img width="1909" height="1004" alt="image" src="https://github.com/user-attachments/assets/613d7881-a807-46c1-957e-fa01db080d7a" />
+<img width="1909" height="1004" alt="image" src="https://github.com/user-attachments/assets/65ac463e-3223-49af-a53b-d40e22a8818f" />
+
+
 ## Tính năng chính (Features)
 
-- Hiển thị bản đồ nội thành TP.HCM với độ phản hồi cao.
-- Cho phép người dùng tương tác click chọn điểm Đi và điểm Đến trực tiếp trên bản đồ.
-- Hỗ trợ tìm kiếm địa điểm qua văn bản (Geocoding API).
-- Tính toán đường đi ngắn nhất tuân thủ theo mạng lưới giao thông thực tế (đường một chiều, loại đường cho phép).
-- Hiển thị thông tin tổng quãng đường và thời gian dự kiến.
+- **Tùy chọn phương tiện di chuyển:** Hỗ trợ định tuyến thông minh cho **Ô tô, Xe máy và Đi bộ**. Thuật toán tự động nhận diện đường cấm ô tô, đường 1 chiều (đi bộ được phép đi ngược chiều) và các hẻm nhỏ.
+- **Giám sát & Tránh điểm đen giao thông:** Bản đồ tự động render đường đi theo màu sắc cảnh báo (🔴 Đỏ: Kẹt/Ngập, 🟡 Vàng: Đông đúc, 🟢 Xanh: Thông thoáng). Cung cấp nút **"Tránh kẹt xe / Ngập"** để thuật toán tự động bẻ lái tìm cung đường khác thoáng hơn.
+- **Định vị & Tìm kiếm thông minh:** Tự động lấy vị trí hiện tại (Geolocation) nếu người dùng không chọn điểm xuất phát. Tích hợp Autocomplete tìm kiếm địa danh qua Geocoding API (Proxy từ Nominatim).
+- **Trải nghiệm UX/UI mượt mà:** Click đúp để chọn điểm, camera bản đồ tự động bay (flyTo) và căn chỉnh (fitBounds) vừa vặn khung hình theo lộ trình.
 
 <img width="1909" height="1003" alt="image" src="https://github.com/user-attachments/assets/f386c5f2-a514-4342-a94a-026aee57b5f9" />
 <img width="1909" height="1003" alt="image" src="https://github.com/user-attachments/assets/9986f385-4c15-48f9-9f10-643b72c75fa9" />
@@ -18,15 +21,15 @@ Dự án Web Application tìm kiếm đường đi ngắn nhất trong khu vực
 
 ## Thuật toán và Kiến trúc (Architecture Notes)
 
-- **Thuật toán A* (A-Star):** Nâng cấp từ Dijkstra, sử dụng hàm Heuristic (Haversine Distance - khoảng cách đường chim bay) để định hướng tìm kiếm thẳng về đích, giúp tăng tốc độ tìm đường lên gấp 3-5 lần.
-- **Xử lý không gian (Spatial Processing):** Thuật toán tự viết trên Golang giúp duyệt nhanh qua hơn 230,000 Nodes trên RAM chỉ trong ~2ms để tìm điểm giao thông gần nhất với vị trí người dùng.
-- **In-Memory Graph:** Toàn bộ Node và Edge được Backend query từ Database (PostGIS) và lưu sẵn vào cấu trúc dữ liệu Adjacency List (Map) trên RAM ngay lúc khởi động server, loại bỏ độ trễ do I/O Database.
+- **Thuật toán A* (A-Star) linh hoạt:** Nâng cấp từ Dijkstra, sử dụng hàm Heuristic (Haversine Distance - khoảng cách đường chim bay) kết hợp với **Trọng số Giao thông (Traffic Penalties)**. Tốc độ tìm đường xuyên qua 230,000+ giao lộ chỉ mất chưa tới `50ms`.
+- **In-Memory Graph:** Để loại bỏ hoàn toàn độ trễ I/O của Database, toàn bộ Node và Edge được Backend query từ PostGIS và lưu sẵn vào cấu trúc dữ liệu Adjacency List (Dictionary) trên RAM ngay lúc Server khởi động.
+- **Xử lý không gian (Spatial Processing):** Thuật toán tìm `Nearest Node` tự viết trên Python giúp duyệt qua hàng trăm ngàn tọa độ trên RAM trong thời gian `~2ms` để khớp vị trí click của người dùng với mạng lưới giao thông.
 
 
 ## Tech Stack
 
 - **Frontend:** Next.js (App Router), TypeScript, Tailwind CSS, Leaflet (React-Leaflet).
-- **Backend:** Golang, Gin Framework.
+- **Backend:** Python, FastAPI.
 - **Database:** PostgreSQL tích hợp extension PostGIS.
 - **Thuật toán:** A* (A-Star) Routing Algorithm, Haversine Formula.
 - **Dữ liệu:** OpenStreetMap (OSM) - Định dạng `.osm.pbf`.
@@ -39,7 +42,7 @@ Dự án Web Application tìm kiếm đường đi ngắn nhất trong khu vực
 ```txt
 HCM-Route-Finder/
 ├── frontend/             # Next.js application
-├── backend/              # Golang REST API
+├── backend/              # Python FastAPI
 ├── data/                 # Thư mục chứa dữ liệu OSM và script import DB
 ├── docs/                 # Tài liệu dự án, quy chuẩn làm việc
 ├── docker-compose.yml    # File cấu hình khởi chạy Database/Services

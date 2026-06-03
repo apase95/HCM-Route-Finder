@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MapPin, Navigation, Loader2 } from "lucide-react";
+import { MapPin, Navigation, Loader2, Car, Bike, Footprints, AlertTriangle } from "lucide-react";
 
 interface SearchResult {
     name: string;
@@ -94,45 +94,49 @@ interface Props {
     setEndText: (text: string) => void;
     onSelectStart: (lat: number, lng: number) => void;
     onSelectEnd: (lat: number, lng: number) => void;
+    vehicle: string;
+    setVehicle: (val: string) => void;
     onFindRoute: () => void;
     isLoading: boolean;
+    avoidTraffic: boolean;
+    setAvoidTraffic: (val: boolean) => void;
 }
 
 export default function SearchPanel({ 
     startText, endText, setStartText, setEndText, 
-    onSelectStart, onSelectEnd, onFindRoute, isLoading 
+    onSelectStart, onSelectEnd, vehicle, setVehicle, onFindRoute, isLoading, avoidTraffic, setAvoidTraffic
 }: Props) {
     return (
-        <div className="absolute top-6 left-6 z-[1000] w-80 bg-white p-5 rounded-2xl shadow-xl border border-gray-200">
+        <div className="absolute top-4 left-4 right-4 sm:right-auto sm:w-80 sm:top-6 sm:left-6 z-[1000] bg-white p-4 sm:p-5 rounded-2xl shadow-xl border border-gray-200">
             <h2 className="text-xl font-bold text-gray-800 mb-4">📍 Tìm đường đi</h2>
             
-            <SearchInput
-                placeholder="Tìm điểm xuất phát..."
-                icon={<Navigation className="w-5 h-5 text-green-500" />}
-                value={startText}
-                onChangeText={setStartText}
-                onSelect={(lat, lng, name) => {
-                    setStartText(name);
-                    onSelectStart(lat, lng);
-                }}
-            />
-            
-            <SearchInput
-                placeholder="Tìm điểm đến..."
-                icon={<MapPin className="w-5 h-5 text-red-500" />}
-                value={endText}
-                onChangeText={setEndText}
-                onSelect={(lat, lng, name) => {
-                    setEndText(name);
-                    onSelectEnd(lat, lng);
-                }}
-            />
+            <SearchInput placeholder="Tìm điểm xuất phát..." icon={<Navigation className="w-5 h-5 text-green-500" />} value={startText} onChangeText={setStartText} onSelect={(lat, lng, name) => { setStartText(name); onSelectStart(lat, lng); }} />
+            <SearchInput placeholder="Tìm điểm đến..." icon={<MapPin className="w-5 h-5 text-red-500" />} value={endText} onChangeText={setEndText} onSelect={(lat, lng, name) => { setEndText(name); onSelectEnd(lat, lng); }} />
 
-            <button 
-                onClick={onFindRoute}
-                disabled={isLoading}
-                className="w-full mt-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-2.5 rounded-lg transition-colors shadow-md cursor-pointer flex items-center justify-center"
-            >
+            {/* THANH CHỌN PHƯƠNG TIỆN */}
+            <div className="flex bg-gray-100 p-1 rounded-lg mb-3">
+                <button onClick={() => setVehicle("car")} className={`flex-1 py-1.5 flex justify-center items-center rounded-md text-sm font-medium transition-colors cursor-pointer ${vehicle === "car" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
+                    <Car className="w-4 h-4 mr-1.5" /> Ô tô
+                </button>
+                <button onClick={() => setVehicle("bike")} className={`flex-1 py-1.5 flex justify-center items-center rounded-md text-sm font-medium transition-colors cursor-pointer ${vehicle === "bike" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
+                    <Bike className="w-4 h-4 mr-1.5" /> Xe máy
+                </button>
+                <button onClick={() => setVehicle("foot")} className={`flex-1 py-1.5 flex justify-center items-center rounded-md text-sm font-medium transition-colors cursor-pointer ${vehicle === "foot" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
+                    <Footprints className="w-4 h-4 mr-1.5" /> Đi bộ
+                </button>
+            </div>
+
+            <div className="flex items-center justify-between bg-orange-50 p-3 rounded-lg mb-4 border border-orange-100 cursor-pointer" onClick={() => setAvoidTraffic(!avoidTraffic)}>
+                <div className="flex items-center text-orange-700">
+                    <AlertTriangle className="w-5 h-5 mr-2" />
+                    <span className="text-sm font-medium">Tránh kẹt xe / Ngập</span>
+                </div>
+                <div className={`w-10 h-5 flex items-center rounded-full p-1 transition-colors ${avoidTraffic ? 'bg-orange-500' : 'bg-gray-300'}`}>
+                    <div className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform ${avoidTraffic ? 'translate-x-4' : ''}`}></div>
+                </div>
+            </div>
+
+            <button onClick={onFindRoute} disabled={isLoading} className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-2.5 rounded-lg transition-colors shadow-md cursor-pointer flex items-center justify-center">
                 {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Tìm Đường"}
             </button>
         </div>

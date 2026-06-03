@@ -13,9 +13,25 @@ class Node:
 class Edge:
     to_node: int
     weight: float
+    allow_car: bool
+    allow_bike: bool
+    allow_foot: bool
+    traffic_level: int
+
+RED_STREETS = ["cộng hòa", "trường chinh", "cách mạng tháng 8", "nguyễn hữu cảnh", "xô viết nghệ tĩnh", "đinh bộ lĩnh", "nguyễn tất thành", "huỳnh tấn phát"]
+YELLOW_STREETS = ["điện biên phủ", "ba tháng hai", "lý thường kiệt", "nguyễn thị minh khai", "nam kỳ khởi nghĩa", "nguyễn văn trỗi", "pasteur"]
+
+def get_traffic_level(street_name: str) -> int:
+    if not street_name: return 1
+    name_lower = street_name.lower()
+    for red in RED_STREETS:
+        if red in name_lower: return 10
+    for yellow in YELLOW_STREETS:
+        if yellow in name_lower: return 3
+    return 1
 
 def haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    R = 6371000  # Bán kính trái đất (mét)
+    R = 6371000
     d_lat = math.radians(lat2 - lat1)
     d_lon = math.radians(lon2 - lon1)
     a = (math.sin(d_lat / 2) ** 2 +
@@ -28,7 +44,6 @@ class RouteGraph:
         self.nodes: Dict[int, Node] = {}
         self.edges: Dict[int, List[Edge]] = {}
 
-    # TSK-013: Build adjacency list graph
     def build_graph(self, roads_data: list):
         coord_to_id = {}
         next_node_id = 1
@@ -44,6 +59,16 @@ class RouteGraph:
 
             if len(coords) < 2:
                 continue
+
+            highway = road.get("highway", "")
+            is_oneway = road.get("oneway") == "yes"
+
+            street_name = road.get("name", "")
+            t_level = get_traffic_level(street_name)
+
+            allow_car = highway not in ['footway', 'pedestrian', 'steps', 'path', 'cycleway']
+            allow_bike = highway not in ['footway', 'pedestrian', 'steps']
+            allow_foot = highway not in ['motorway', 'trunk', 'motorway_link', 'trunk_link']
 
             for i in range(len(coords) - 1):
                 lng1, lat1 = coords[i]
@@ -68,10 +93,11 @@ class RouteGraph:
 
                 dist = haversine(lat1, lng1, lat2, lng2)
 
-                self.edges[id1].append(Edge(to_node=id2, weight=dist))
-
-                if road.get("oneway") != "yes":
-                    self.edges[id2].append(Edge(to_node=id1, weight=dist))
+                self.edges[id1].append(Edge(id2, dist, allow_car, allow_bike, allow_foot, t_level))
+                if is_oneway:
+                    self.edges[id2].append(Edge(id1, dist, False, False, allow_foot, t_level))
+                else:
+                    self.edges[id2].append(Edge(id1, dist, allow_car, allow_bike, allow_foot, t_level))
 
         total_edges = sum(len(e) for e in self.edges.values())
         print(f"✅ Xây dựng Graph hoàn tất: [{len(self.nodes)} Nodes] và [{total_edges} Edges]")
