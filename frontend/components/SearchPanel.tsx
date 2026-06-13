@@ -100,11 +100,14 @@ interface Props {
     isLoading: boolean;
     avoidTraffic: boolean;
     setAvoidTraffic: (val: boolean) => void;
+    hour: number;
+    setHour: (h: number) => void;
 }
 
 export default function SearchPanel({ 
     startText, endText, setStartText, setEndText, 
-    onSelectStart, onSelectEnd, vehicle, setVehicle, onFindRoute, isLoading, avoidTraffic, setAvoidTraffic
+    onSelectStart, onSelectEnd, vehicle, setVehicle, onFindRoute, isLoading, avoidTraffic, setAvoidTraffic,
+    hour, setHour
 }: Props) {
     return (
         <div className="absolute top-4 left-4 right-4 sm:right-auto sm:w-80 sm:top-6 sm:left-6 z-[1000] bg-white p-4 sm:p-5 rounded-2xl shadow-xl border border-gray-200">
@@ -124,6 +127,22 @@ export default function SearchPanel({
                 <button onClick={() => setVehicle("foot")} className={`flex-1 py-1.5 flex justify-center items-center rounded-md text-sm font-medium transition-colors cursor-pointer ${vehicle === "foot" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
                     <Footprints className="w-4 h-4 mr-1.5" /> Đi bộ
                 </button>
+            </div>
+
+            <div className="mb-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                <label className="text-sm font-medium text-gray-700 flex justify-between mb-1">
+                    <span>⏰ Mô phỏng Giờ:</span>
+                    <span className="font-bold text-blue-600">{hour}:00</span>
+                </label>
+                <input 
+                    type="range" min="0" max="23" 
+                    value={hour} 
+                    onChange={(e) => setHour(parseInt(e.target.value))} 
+                    className="w-full accent-blue-600 cursor-pointer" 
+                />
+                <div className="flex justify-between text-xs text-gray-400 mt-1">
+                    <span>Đêm</span><span>Sáng</span><span>Chiều</span>
+                </div>
             </div>
 
             <div className="flex items-center justify-between bg-orange-50 p-3 rounded-lg mb-4 border border-orange-100 cursor-pointer" onClick={() => setAvoidTraffic(!avoidTraffic)}>

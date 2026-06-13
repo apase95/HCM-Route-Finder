@@ -77,6 +77,8 @@ export default function MapView() {
     const [routeSegments, setRouteSegments] = useState<{color: string, path: [number, number][]}[]>([]);
     const [avoidTraffic, setAvoidTraffic] = useState(false);
 
+    const [hour, setHour] = useState<number>(new Date().getHours());
+
     const handleMapClick = (lat: number, lng: number) => {
         if (!startPoint || (startPoint && endPoint)) {
             setStartPoint([lat, lng]);
@@ -91,10 +93,10 @@ export default function MapView() {
         }
     };
 
-    const fetchRoute = async (start: [number, number], end: [number, number], selectedVehicle: string, avoid: boolean) => {
+    const fetchRoute = async (start: [number, number], end: [number, number], selectedVehicle: string, avoid: boolean, h: number) => {
         setIsRouting(true);
         try {
-            const res = await fetch(`http://localhost:8080/api/v1/routes?startLat=${start[0]}&startLng=${start[1]}&endLat=${end[0]}&endLng=${end[1]}&vehicle=${selectedVehicle}&avoidTraffic=${avoid}`);
+            const res = await fetch(`http://localhost:8080/api/v1/routes?startLat=${start[0]}&startLng=${start[1]}&endLat=${end[0]}&endLng=${end[1]}&vehicle=${selectedVehicle}&avoidTraffic=${avoid}&hour=${h}`);
             const data = await res.json();
             
             if (data.success) {
@@ -130,7 +132,7 @@ export default function MapView() {
                         setStartPoint(currentLoc);
                         setLastActivePoint(currentLoc);
                         setStartText("Vị trí hiện tại của bạn");
-                        fetchRoute(currentLoc, endPoint, vehicle, avoidTraffic);
+                        fetchRoute(currentLoc, endPoint, vehicle, avoidTraffic, hour);
                     },
                     (error) => {
                         setIsRouting(false);
@@ -142,7 +144,7 @@ export default function MapView() {
                 alert("Trình duyệt của bạn không hỗ trợ định vị.");
             }
         } else {
-            fetchRoute(startPoint, endPoint, vehicle, avoidTraffic);
+            fetchRoute(startPoint, endPoint, vehicle, avoidTraffic, hour);
         }
     };
 
@@ -190,6 +192,8 @@ export default function MapView() {
                 isLoading={isRouting}
                 avoidTraffic={avoidTraffic}
                 setAvoidTraffic={setAvoidTraffic}
+                hour={hour}
+                setHour={setHour}
             />
 
             {routeInfo && (
