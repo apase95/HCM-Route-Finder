@@ -2,14 +2,14 @@ import urllib.parse
 import httpx
 import logging
 import time
+import datetime
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from db import fetch_all_roads
-from graph import RouteGraph
 from astar import find_path_astar
-
+from graph import RouteGraph, get_dynamic_traffic_level
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -55,12 +55,7 @@ async def startup_event():
 
 @app.get("/api/v1/ping")
 async def ping():
-    return {
-        "success": True,
-        "message": "Backend FastAPI đã hoạt động!",
-        "data": None,
-        "errorCode": None
-    }
+    return {"success": True, "message": "Backend FastAPI đã hoạt động!", "data": None, "errorCode": None}
 
 @app.get("/api/v1/routes")
 async def get_route(
@@ -69,16 +64,19 @@ async def get_route(
     endLat: float, 
     endLng: float, 
     vehicle: str = "car", 
-    avoidTraffic: str = "false"
+    avoidTraffic: str = "false",
+    hour: int = -1   # <-- THÊM THAM SỐ HOUR Ở ĐÂY
 ):
     try:
-        # Ép kiểu an toàn từ chuỗi sang boolean
         is_avoid_traffic = avoidTraffic.lower() == "true"
+        
+        if hour < 0 or hour > 23:
+            hour = datetime.datetime.now().hour
         
         start_node_id = route_graph.find_nearest_node(startLat, startLng)
         end_node_id = route_graph.find_nearest_node(endLat, endLng)
         
-        path_ids, _ = find_path_astar(route_graph, start_node_id, end_node_id, vehicle, is_avoid_traffic)
+        path_ids, _ = find_path_astar(route_graph, start_node_id, end_node_id, vehicle, is_avoid_traffic, hour)
         
         if not path_ids:
             return JSONResponse(status_code=404, content={
@@ -102,8 +100,9 @@ async def get_route(
             for edge in route_graph.edges[u]:
                 if edge.to_node == v:
                     dist = edge.weight
-                    if edge.traffic_level == 10: edge_color = "red"
-                    elif edge.traffic_level == 3: edge_color = "yellow"
+                    t_level = get_dynamic_traffic_level(edge.traffic_zone, hour)
+                    if t_level >= 5: edge_color = "red"
+                    elif t_level >= 2: edge_color = "yellow"
                     break
                     
             total_distance += dist
@@ -140,9 +139,8 @@ async def get_route(
         }
     except Exception as e:
         logger.error(f"Route API Error: {str(e)}")
-        # Trả về lỗi 500 chuẩn form để FE không báo lỗi CORS
         return JSONResponse(status_code=500, content={
-            "success": False, "message": "Lỗi xử lý thuật toán tìm đường", "data": None, "errorCode": "INTERNAL_SERVER_ERROR"
+            "success": False, "message": f"Lỗi xử lý thuật toán tìm đường: {str(e)}", "data": None, "errorCode": "INTERNAL_SERVER_ERROR"
         })
 
 @app.get("/api/v1/search")
@@ -152,11 +150,10 @@ async def search_location(q: str):
             "success": False, "message": "Thiếu từ khóa tìm kiếm", "data": [], "errorCode": "MISSING_QUERY"
         })
 
-    search_query = f"{q}, Hồ Chí Minh"
-    encoded_query = urllib.parse.quote(search_query)
-    nominatim_url = f"https://nominatim.openstreetmap.org/search?q={encoded_query}&format=json&limit=5"
+    encoded_query = urllib.parse.quote(q)
+    nominatim_url = f"https://nominatim.openstreetmap.org/search?q={encoded_query}&format=json&limit=5&countrycodes=vn&accept-language=vi"
 
-    headers = {"User-Agent": "HCM-Route-Finder-MVP/1.0"}
+    headers = {"User-Agent": "HCM-Route-Finder-Project/1.0 (student-project)"}
 
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:

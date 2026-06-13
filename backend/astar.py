@@ -1,14 +1,10 @@
 import heapq
 from typing import List, Tuple
-from graph import RouteGraph, haversine
+from graph import RouteGraph, haversine, get_dynamic_traffic_level
 
-def find_path_astar(graph: RouteGraph, start_id: int, end_id: int, vehicle_type: str = "car", avoid_traffic: bool = False) -> Tuple[List[int], float]:
-    """
-    Tìm đường đi ngắn nhất sử dụng thuật toán A*.
-    """
+def find_path_astar(graph: RouteGraph, start_id: int, end_id: int, vehicle_type: str = "car", avoid_traffic: bool = False, current_hour: int = 7) -> Tuple[List[int], float]:
     pq = []
     heapq.heappush(pq, (0.0, start_id))
-    
     g_score = {start_id: 0.0}
     came_from = {}
     
@@ -32,9 +28,8 @@ def find_path_astar(graph: RouteGraph, start_id: int, end_id: int, vehicle_type:
             # Tính Cost (Trọng số)
             cost = edge.weight
             if avoid_traffic:
-                cost = edge.weight * edge.traffic_level
-            
-            # SỬA LỖI 2: Phải cộng với cost, không phải edge.weight
+                t_level = get_dynamic_traffic_level(edge.traffic_zone, current_hour)
+                cost = edge.weight * t_level
             tentative_g = current_g + cost
             
             if tentative_g < g_score.get(edge.to_node, float('inf')):
