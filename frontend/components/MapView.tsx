@@ -190,7 +190,19 @@ export default function MapView() {
                 })}
 
                 {routeSegments.map((segment, idx) => (
-                    <Polyline key={idx} positions={segment.path} color={segment.color === 'red' ? '#ef4444' : segment.color === 'yellow' ? '#f59e0b' : '#22c55e'} weight={6} opacity={0.9} lineCap="round" lineJoin="round" />
+                    <Polyline 
+                        key={idx}
+                        positions={segment.path} 
+                        color={
+                            segment.color === 'red' ? '#ef0119' :       // Đỏ (Kẹt cứng)
+                            segment.color === 'orange' ? '#ff6200' :    // Cam (Ùn ứ)
+                            segment.color === 'yellow' ? '#ffdd00' :    // Vàng (Đông đúc)
+                            '#22c55e'                                   // Xanh (Thông thoáng)
+                        } 
+                        weight={6} 
+                        opacity={0.9}
+                        lineCap="round" lineJoin="round"
+                    />
                 ))}
             </MapContainer>
         </div>

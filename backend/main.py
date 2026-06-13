@@ -111,8 +111,14 @@ async def get_route(
                     if edge.to_node == v:
                         dist = edge.weight
                         t_level = get_dynamic_traffic_level(edge.traffic_zone, hour)
-                        if t_level >= 5: edge_color = "red"
-                        elif t_level >= 2: edge_color = "yellow"
+                        if t_level >= 10: 
+                            edge_color = "red"
+                        elif t_level >= 4: 
+                            edge_color = "orange"
+                        elif t_level >= 2: 
+                            edge_color = "yellow"
+                        else:
+                            edge_color = "green"
                         break
                         
                 total_distance += dist
